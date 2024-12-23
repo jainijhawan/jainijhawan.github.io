@@ -1291,4 +1291,58 @@ input[type="text"] {
   opacity: 0;
 }
 
-/*# sourceMappingURL=style.css.map */
+.glowing-button {
+  display: inline-block;
+  padding: 15px 30px;
+  font-size: 16px;
+  color: white;
+  text-transform: uppercase;
+  text-decoration: none;
+  border-radius: 30px;
+  background: linear-gradient(
+    45deg,
+    #6a11cb,
+    #2575fc,
+    #24c6dc,
+    #32a852,
+    #f79d00,
+    #e100ff,
+    #6a11cb
+  );
+  background-size: 300% 300%;
+  animation: gradient-rotate 4s infinite linear, glow 1.5s infinite;
+  box-shadow: 0 0 15px rgba(106, 17, 203, 0.6), 0 0 30px rgba(37, 117, 252, 0.4);
+  transition: all 0.3s ease-in-out;
+}
+
+.glowing-button:hover {
+  color: white;
+  box-shadow: 0 0 25px rgba(106, 17, 203, 0.8), 0 0 50px rgba(37, 117, 252, 0.6);
+  transform: scale(1.1);
+}
+
+.glowing-button:focus,
+.glowing-button:active {
+  color: white;
+}
+
+@keyframes gradient-rotate {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes glow {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(106, 17, 203, 0.6), 0 0 30px rgba(37, 117, 252, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(106, 17, 203, 0.8), 0 0 45px rgba(37, 117, 252, 0.6);
+  }
+}
