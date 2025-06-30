@@ -36,13 +36,210 @@
 	<!-- Theme style  -->
 	<link rel="stylesheet" href="css/style.css">
 
-	<!-- Google Analytics 4 (GA4) -->
+	<!-- Google Analytics 4 (GA4) with Enhanced Tracking -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=G-JZ2VC64MQE"></script>
 	<script>
 		window.dataLayer = window.dataLayer || [];
 		function gtag(){dataLayer.push(arguments);}
 		gtag('js', new Date());
-		gtag('config', 'G-JZ2VC64MQE');
+		
+		// Enhanced configuration for maximum data collection
+		gtag('config', 'G-JZ2VC64MQE', {
+			// Enhanced measurement features
+			enhanced_measurement: true,
+			
+			// Track all interactions
+			send_page_view: true,
+			
+			// Custom parameters for better insights
+			custom_map: {
+				'custom_parameter_1': 'section_viewed',
+				'custom_parameter_2': 'interaction_type'
+			},
+			
+			// Track file downloads, outbound clicks, site search, video engagement
+			link_attribution: true,
+			
+			// Collect more user data (when available)
+			allow_google_signals: true,
+			allow_ad_personalization_signals: true
+		});
+
+		// Enhanced Event Tracking System - ALL DATA SENT TO GOOGLE ANALYTICS
+		window.portfolioTracker = {
+			// Track section views with scroll depth
+			trackSectionView: function(sectionName, scrollDepth) {
+				gtag('event', 'section_view', {
+					'section_name': sectionName,
+					'scroll_depth': scrollDepth + '%',
+					'timestamp': new Date().toISOString(),
+					'device_type': this.getDeviceType(),
+					'viewport_width': window.innerWidth,
+					'viewport_height': window.innerHeight,
+					'page_url': window.location.href
+				});
+			},
+
+			// Track interactions (clicks, hovers, etc.)
+			trackInteraction: function(element, action, category) {
+				gtag('event', 'user_interaction', {
+					'interaction_element': element,
+					'interaction_action': action,
+					'interaction_category': category,
+					'page_section': this.getCurrentSection(),
+					'timestamp': new Date().toISOString(),
+					'device_type': this.getDeviceType(),
+					'user_agent': navigator.userAgent
+				});
+			},
+
+			// Track file downloads
+			trackDownload: function(fileName, fileType) {
+				gtag('event', 'file_download', {
+					'file_name': fileName,
+					'file_type': fileType,
+					'download_source': 'portfolio_website',
+					'visitor_intent': 'high_interest',
+					'timestamp': new Date().toISOString(),
+					'page_section': this.getCurrentSection(),
+					'device_type': this.getDeviceType()
+				});
+				
+				// Also track as conversion
+				gtag('event', 'conversion', {
+					'conversion_type': 'resume_download',
+					'value': 100, // High value action
+					'currency': 'USD'
+				});
+			},
+
+			// Track outbound link clicks
+			trackOutboundClick: function(url, linkText, category) {
+				gtag('event', 'outbound_link_click', {
+					'link_url': url,
+					'link_text': linkText,
+					'link_category': category,
+					'engagement_level': 'high',
+					'timestamp': new Date().toISOString(),
+					'referrer_page': window.location.href,
+					'device_type': this.getDeviceType()
+				});
+				
+				// Track social media clicks specifically
+				if (category === 'social_media') {
+					gtag('event', 'social_media_engagement', {
+						'platform': this.getSocialPlatform(url),
+						'profile_type': 'professional',
+						'engagement_intent': 'high'
+					});
+				}
+			},
+
+			// Track time spent in sections
+			trackTimeInSection: function(sectionName, timeSpent) {
+				gtag('event', 'section_engagement', {
+					'section_name': sectionName,
+					'time_spent_seconds': timeSpent,
+					'engagement_quality': timeSpent > 30 ? 'high' : timeSpent > 10 ? 'medium' : 'low',
+					'timestamp': new Date().toISOString(),
+					'engagement_score': Math.min(Math.round(timeSpent / 10), 10), // 1-10 score
+					'bounce_risk': timeSpent < 5 ? 'high' : timeSpent < 15 ? 'medium' : 'low'
+				});
+			},
+
+			// Track form interactions
+			trackFormInteraction: function(formAction, fieldName) {
+				gtag('event', 'form_interaction', {
+					'form_action': formAction,
+					'field_name': fieldName || 'unknown',
+					'lead_quality': 'potential_client',
+					'timestamp': new Date().toISOString(),
+					'form_type': 'contact_form',
+					'conversion_step': this.getFormStep(formAction)
+				});
+				
+				// Track form completion progress
+				if (formAction === 'form_submit') {
+					gtag('event', 'conversion', {
+						'conversion_type': 'contact_form_submit',
+						'value': 500, // Very high value action
+						'currency': 'USD'
+					});
+				}
+			},
+
+			// Get social media platform from URL
+			getSocialPlatform: function(url) {
+				if (url.includes('linkedin')) return 'linkedin';
+				if (url.includes('twitter')) return 'twitter';
+				if (url.includes('github')) return 'github';
+				return 'other';
+			},
+
+			// Get form completion step
+			getFormStep: function(action) {
+				const steps = {
+					'field_focus': 1,
+					'field_complete': 2,
+					'form_submit': 3
+				};
+				return steps[action] || 0;
+			},
+
+			// Get current section based on scroll position
+			getCurrentSection: function() {
+				const sections = ['header', 'about', 'resume', 'skills', 'work', 'blog', 'contact'];
+				const scrollPosition = window.scrollY;
+				// Simple logic to determine current section
+				if (scrollPosition < 800) return 'header';
+				if (scrollPosition < 1600) return 'about'; 
+				if (scrollPosition < 2400) return 'resume';
+				if (scrollPosition < 3200) return 'skills';
+				if (scrollPosition < 4800) return 'work';
+				if (scrollPosition < 5600) return 'blog';
+				return 'contact';
+			},
+
+			// Get device type
+			getDeviceType: function() {
+				const userAgent = navigator.userAgent;
+				if (/Mobile|Android|iPhone/.test(userAgent)) return 'mobile';
+				if (/Tablet|iPad/.test(userAgent)) return 'tablet';
+				return 'desktop';
+			},
+
+			// Get browser type
+			getBrowser: function(userAgent) {
+				if (userAgent.includes('Chrome')) return 'Chrome';
+				if (userAgent.includes('Firefox')) return 'Firefox';
+				if (userAgent.includes('Safari')) return 'Safari';
+				if (userAgent.includes('Edge')) return 'Edge';
+				return 'Unknown';
+			}
+		};
+
+		// Track page load performance
+		window.addEventListener('load', function() {
+			// Track page load time
+			const loadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+			gtag('event', 'page_performance', {
+				'page_load_time': loadTime,
+				'performance_rating': loadTime < 3000 ? 'good' : loadTime < 6000 ? 'fair' : 'poor',
+				'timestamp': new Date().toISOString()
+			});
+
+			// Track initial viewport and screen data
+			gtag('event', 'visitor_environment', {
+				'screen_resolution': screen.width + 'x' + screen.height,
+				'viewport_size': window.innerWidth + 'x' + window.innerHeight,
+				'device_pixel_ratio': window.devicePixelRatio,
+				'color_depth': screen.colorDepth,
+				'timezone': Intl.DateTimeFormat().resolvedOptions().timeZone,
+				'language': navigator.language,
+				'platform': navigator.platform,
+				'connection_type': navigator.connection ? navigator.connection.effectiveType : 'unknown'
+			});
+		});
 	</script>
 
 	<!-- RB2B Visitor Identification Script -->
@@ -82,17 +279,17 @@
 								<p>
 								<ul class="fh5co-social-icons">
 									<li><a href="https://twitter.com/JaiNijhawan" target="_blank"
-											rel="noopener noreferrer"><i class="icon-twitter2"></i></a></li>
+											rel="noopener noreferrer" onclick="portfolioTracker.trackOutboundClick('https://twitter.com/JaiNijhawan', 'Twitter Profile', 'social_media');"><i class="icon-twitter2"></i></a></li>
 									<li><a href="https://www.linkedin.com/in/jai-nijhawan/" target="_blank"
-											rel="noopener noreferrer"><i class="icon-linkedin2"></i></a></li>
+											rel="noopener noreferrer" onclick="portfolioTracker.trackOutboundClick('https://www.linkedin.com/in/jai-nijhawan/', 'LinkedIn Profile', 'social_media');"><i class="icon-linkedin2"></i></a></li>
 									<li><a href="https://github.com/jainijhawan" target="_blank"
-											rel="noopener noreferrer"><i class="icon-github2"></i></a></li>
+											rel="noopener noreferrer" onclick="portfolioTracker.trackOutboundClick('https://github.com/jainijhawan', 'GitHub Profile', 'social_media');"><i class="icon-github2"></i></a></li>
 								</ul>
 								  <script src="https://static.elfsight.com/platform/platform.js" async></script>
 <div class="elfsight-app-eaf23d26-a275-4260-b10f-cc7ad78dbd5e" data-elfsight-app-lazy style="margin-top: 20px;"></div>
 								  <p class="text-center" style="margin-top: 10px;">
 									<a href="https://github.com/jainijhawan/jainijhawan.github.io/raw/main/Jai%20Nijhawan%20Resume.pdf"
-									 download class="glowing-button">Download Resume</a>
+									 download class="glowing-button" onclick="portfolioTracker.trackDownload('Jai_Nijhawan_Resume.pdf', 'PDF'); portfolioTracker.trackInteraction('Resume Download', 'click', 'conversion');">Download Resume</a>
 								</p>																
 							</div>
 						</div>
@@ -427,7 +624,7 @@
 				<div class="row">
 					<div class="col-md-3 text-center col-padding animate-box">
 						<a href="https://apps.apple.com/in/app/animal-games-lil-explorers/id6745785945?platform=iphone" target="_blank"
-							rel="noopener noreferrer" class="work" style="background-image: url(images/lilExplorers.png);">
+							rel="noopener noreferrer" class="work" style="background-image: url(images/lilExplorers.png);" onclick="portfolioTracker.trackOutboundClick('https://apps.apple.com/in/app/animal-games-lil-explorers/id6745785945', 'Lil Explorers App', 'portfolio_app'); portfolioTracker.trackInteraction('App Store Link', 'click', 'portfolio_showcase');">
 							<div class="desc">
 								<h3>Lil Explorers</h3>
 								<span>Education</span>
@@ -436,7 +633,7 @@
 					</div>
 					<div class="col-md-3 text-center col-padding animate-box">
 						<a href="https://apps.apple.com/ca/app/monumental/id1082655562" target="_blank"
-							rel="noopener noreferrer" class="work" style="background-image: url(images/monumental.png);">
+							rel="noopener noreferrer" class="work" style="background-image: url(images/monumental.png);" onclick="portfolioTracker.trackOutboundClick('https://apps.apple.com/ca/app/monumental/id1082655562', 'Monumental+ App', 'portfolio_app'); portfolioTracker.trackInteraction('App Store Link', 'click', 'portfolio_showcase');">
 							<div class="desc">
 								<h3>Monumental+</h3>
 								<span>Sports Entertainment</span>
@@ -445,7 +642,7 @@
 					</div>
 					<div class="col-md-3 text-center col-padding animate-box">
 						<a href="https://apps.apple.com/ca/app/caliente-tv/id6504900856" target="_blank"
-							rel="noopener noreferrer" class="work" style="background-image: url(images/caliente.png);">
+							rel="noopener noreferrer" class="work" style="background-image: url(images/caliente.png);" onclick="portfolioTracker.trackOutboundClick('https://apps.apple.com/ca/app/caliente-tv/id6504900856', 'Caliente TV App', 'portfolio_app'); portfolioTracker.trackInteraction('App Store Link', 'click', 'portfolio_showcase');">
 							<div class="desc">
 								<h3>Caliente TV</h3>
 								<span>Sports Entertainment</span>
@@ -664,42 +861,42 @@
 			</div>
 			<div class="choose animate-box">
 				<h2>Contact Me</h2>
-				<form action="https://formsubmit.co/40a934198ce21f2754a06f21c416aa20" method="POST">
+				<form action="https://formsubmit.co/40a934198ce21f2754a06f21c416aa20" method="POST" onsubmit="portfolioTracker.trackFormInteraction('form_submit', 'contact_form'); portfolioTracker.trackInteraction('Contact Form', 'submit', 'lead_generation');">
 					<div class="row form-group">
 						<div class="col-md-6">
 							<input type="text" name="First Name" id="fname" class="form-control"
-								placeholder="Firstname" required>
+								placeholder="Firstname" required onfocus="portfolioTracker.trackFormInteraction('field_focus', 'firstname');" onblur="portfolioTracker.trackFormInteraction('field_complete', 'firstname');">
 						</div>
 					</div>
 					<div class="row form-group">
 						<div class="col-md-6">
 							<input type="text" name="Last Name" id="lname" class="form-control"
-								placeholder="Lastname">
+								placeholder="Lastname" onfocus="portfolioTracker.trackFormInteraction('field_focus', 'lastname');" onblur="portfolioTracker.trackFormInteraction('field_complete', 'lastname');">
 						</div>
 					</div>
 
 					<div class="row form-group">
 						<div class="col-md-12">
 							<input type="text" name="Email" id="email" class="form-control"
-								placeholder="Email address" required>
+								placeholder="Email address" required onfocus="portfolioTracker.trackFormInteraction('field_focus', 'email');" onblur="portfolioTracker.trackFormInteraction('field_complete', 'email');">
 						</div>
 					</div>
 
 					<div class="row form-group">
 						<div class="col-md-12">
 							<input type="text" name="Subject" id="subject" class="form-control"
-								placeholder="Subject at Hand">
+								placeholder="Subject at Hand" onfocus="portfolioTracker.trackFormInteraction('field_focus', 'subject');" onblur="portfolioTracker.trackFormInteraction('field_complete', 'subject');">
 						</div>
 					</div>
 
 					<div class="row form-group">
 						<div class="col-md-12">
 							<textarea name="message" name="Message" id="message" cols="30" rows="10"
-								class="form-control" placeholder="The 'MESSAGE'💬" required></textarea>
+								class="form-control" placeholder="The 'MESSAGE'💬" required onfocus="portfolioTracker.trackFormInteraction('field_focus', 'message');" onblur="portfolioTracker.trackFormInteraction('field_complete', 'message');"></textarea>
 						</div>
 					</div>
 					<div class="form-group">
-						<input type="submit" value="Send Message" class="btn btn-primary">
+						<input type="submit" value="Send Message" class="btn btn-primary" onclick="portfolioTracker.trackInteraction('Submit Button', 'click', 'conversion');">
 					</div>
 					<!-- <input type="hidden" name="_next" value="thankYou.html"> -->
 				</form>
@@ -730,6 +927,265 @@
 		<!-- Main -->
 		<script src="js/main.js"></script>
 
+		<!-- Advanced Analytics Tracking -->
+		<script>
+			// Scroll tracking with throttling
+			let scrollTimeout;
+			let scrollSections = {};
+			let sectionTimers = {};
+
+			function throttledScrollTracker() {
+				if (scrollTimeout) return;
+				scrollTimeout = setTimeout(() => {
+					const scrollPercent = Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100);
+					const currentSection = portfolioTracker.getCurrentSection();
+					
+					// Track new section views
+					if (!scrollSections[currentSection]) {
+						scrollSections[currentSection] = true;
+						portfolioTracker.trackSectionView(currentSection, scrollPercent);
+						
+						// Start timer for this section
+						sectionTimers[currentSection] = Date.now();
+					}
+					
+					// Track scroll milestones with detailed data
+					if (scrollPercent >= 25 && !scrollSections['25_percent']) {
+						scrollSections['25_percent'] = true;
+						gtag('event', 'scroll_milestone', {
+							'milestone': '25_percent',
+							'scroll_depth': scrollPercent,
+							'current_section': currentSection,
+							'engagement_level': 'low',
+							'timestamp': new Date().toISOString(),
+							'time_to_milestone': Date.now() - pageVisibilityStartTime
+						});
+						portfolioTracker.trackInteraction('Scroll Milestone', '25% scroll', 'engagement');
+					}
+					if (scrollPercent >= 50 && !scrollSections['50_percent']) {
+						scrollSections['50_percent'] = true;
+						gtag('event', 'scroll_milestone', {
+							'milestone': '50_percent',
+							'scroll_depth': scrollPercent,
+							'current_section': currentSection,
+							'engagement_level': 'medium',
+							'timestamp': new Date().toISOString(),
+							'time_to_milestone': Date.now() - pageVisibilityStartTime
+						});
+						portfolioTracker.trackInteraction('Scroll Milestone', '50% scroll', 'engagement');
+					}
+					if (scrollPercent >= 75 && !scrollSections['75_percent']) {
+						scrollSections['75_percent'] = true;
+						gtag('event', 'scroll_milestone', {
+							'milestone': '75_percent',
+							'scroll_depth': scrollPercent,
+							'current_section': currentSection,
+							'engagement_level': 'high',
+							'timestamp': new Date().toISOString(),
+							'time_to_milestone': Date.now() - pageVisibilityStartTime
+						});
+						portfolioTracker.trackInteraction('Scroll Milestone', '75% scroll', 'engagement');
+					}
+					if (scrollPercent >= 90 && !scrollSections['90_percent']) {
+						scrollSections['90_percent'] = true;
+						gtag('event', 'scroll_milestone', {
+							'milestone': '90_percent',
+							'scroll_depth': scrollPercent,
+							'current_section': currentSection,
+							'engagement_level': 'very_high',
+							'timestamp': new Date().toISOString(),
+							'time_to_milestone': Date.now() - pageVisibilityStartTime,
+							'likely_interested': true
+						});
+						portfolioTracker.trackInteraction('Scroll Milestone', '90% scroll', 'high_engagement');
+					}
+					
+					scrollTimeout = null;
+				}, 1000);
+			}
+
+			// Track time spent in each section
+			let lastSection = portfolioTracker.getCurrentSection();
+			let lastSectionTime = Date.now();
+
+			function trackSectionTime() {
+				const currentSection = portfolioTracker.getCurrentSection();
+				if (currentSection !== lastSection) {
+					const timeSpent = Math.round((Date.now() - lastSectionTime) / 1000);
+					if (timeSpent > 3) { // Only track if spent more than 3 seconds
+						portfolioTracker.trackTimeInSection(lastSection, timeSpent);
+					}
+					lastSection = currentSection;
+					lastSectionTime = Date.now();
+				}
+			}
+
+			// Track user engagement patterns
+			let idleTimer;
+			let isIdle = false;
+
+			function resetIdleTimer() {
+				if (isIdle) {
+					isIdle = false;
+					gtag('event', 'user_engagement', {
+						'engagement_type': 'returned_from_idle',
+						'idle_duration': Date.now() - idleStartTime,
+						'current_section': portfolioTracker.getCurrentSection(),
+						'total_session_time': Date.now() - pageVisibilityStartTime,
+						'engagement_quality': 'resumed_activity'
+					});
+					portfolioTracker.trackInteraction('User Activity', 'returned_from_idle', 'engagement');
+				}
+				clearTimeout(idleTimer);
+				idleTimer = setTimeout(() => {
+					idleStartTime = Date.now();
+					isIdle = true;
+					gtag('event', 'user_engagement', {
+						'engagement_type': 'idle_detected',
+						'current_section': portfolioTracker.getCurrentSection(),
+						'time_before_idle': Date.now() - pageVisibilityStartTime,
+						'potential_bounce': true,
+						'engagement_quality': 'decreased_activity'
+					});
+					portfolioTracker.trackInteraction('User Activity', 'idle_detected', 'engagement');
+				}, 30000); // 30 seconds idle
+			}
+
+			let idleStartTime = 0;
+
+			// Track browser tab visibility
+			let pageVisibilityStartTime = Date.now();
+
+			function handleVisibilityChange() {
+				if (document.hidden) {
+					const timeVisible = Math.round((Date.now() - pageVisibilityStartTime) / 1000);
+					portfolioTracker.trackInteraction('Page Visibility', 'tab_hidden', 'engagement');
+					gtag('event', 'tab_visibility', {
+						'action': 'hidden',
+						'time_visible': timeVisible
+					});
+				} else {
+					pageVisibilityStartTime = Date.now();
+					portfolioTracker.trackInteraction('Page Visibility', 'tab_visible', 'engagement');
+					gtag('event', 'tab_visibility', {
+						'action': 'visible'
+					});
+				}
+			}
+
+			// Track mouse movements for engagement
+			let mouseMovements = 0;
+			let lastMouseMoveTime = 0;
+
+			function trackMouseMovement() {
+				const now = Date.now();
+				if (now - lastMouseMoveTime > 1000) { // Track every second
+					mouseMovements++;
+					lastMouseMoveTime = now;
+					
+					// Track engagement milestones
+					if (mouseMovements === 25) {
+						gtag('event', 'mouse_engagement', {
+							'engagement_level': 'moderate',
+							'mouse_movements': mouseMovements,
+							'current_section': portfolioTracker.getCurrentSection(),
+							'session_duration': now - pageVisibilityStartTime,
+							'engagement_quality': 'active_browsing'
+						});
+					}
+					if (mouseMovements === 50) {
+						gtag('event', 'mouse_engagement', {
+							'engagement_level': 'high',
+							'mouse_movements': mouseMovements,
+							'current_section': portfolioTracker.getCurrentSection(),
+							'session_duration': now - pageVisibilityStartTime,
+							'engagement_quality': 'very_active_browsing',
+							'likely_interested': true
+						});
+						portfolioTracker.trackInteraction('Mouse Activity', 'high_engagement', 'engagement');
+					}
+					if (mouseMovements === 100) {
+						gtag('event', 'mouse_engagement', {
+							'engagement_level': 'very_high',
+							'mouse_movements': mouseMovements,
+							'current_section': portfolioTracker.getCurrentSection(),
+							'session_duration': now - pageVisibilityStartTime,
+							'engagement_quality': 'highly_engaged_visitor',
+							'potential_lead': true
+						});
+					}
+				}
+			}
+
+			// Initialize all tracking
+			window.addEventListener('load', function() {
+				// Scroll tracking
+				window.addEventListener('scroll', throttledScrollTracker);
+				window.addEventListener('scroll', trackSectionTime);
+				
+				// Activity tracking
+				document.addEventListener('mousemove', trackMouseMovement);
+				document.addEventListener('mousedown', resetIdleTimer);
+				document.addEventListener('keypress', resetIdleTimer);
+				document.addEventListener('scroll', resetIdleTimer);
+				
+				// Visibility tracking
+				document.addEventListener('visibilitychange', handleVisibilityChange);
+				
+				// Track page exit with comprehensive data
+				window.addEventListener('beforeunload', function() {
+					const totalTime = Math.round((Date.now() - pageVisibilityStartTime) / 1000);
+					const engagementScore = Math.min(Math.round((mouseMovements + (totalTime/10))/2), 100);
+					
+					gtag('event', 'page_exit', {
+						'total_time_on_page': totalTime,
+						'mouse_movements': mouseMovements,
+						'engagement_level': totalTime > 120 ? 'high' : totalTime > 60 ? 'medium' : 'low',
+						'engagement_score': engagementScore,
+						'sections_visited': Object.keys(scrollSections).length,
+						'deepest_scroll': Math.max(...Object.keys(scrollSections).filter(k => k.includes('percent')).map(k => parseInt(k)) || [0]),
+						'session_quality': engagementScore > 70 ? 'high_quality' : engagementScore > 40 ? 'medium_quality' : 'low_quality',
+						'potential_lead': engagementScore > 60 && totalTime > 90,
+						'bounce_indicator': totalTime < 30 && mouseMovements < 10
+					});
+					
+					// Track session summary
+					gtag('event', 'session_summary', {
+						'session_duration': totalTime,
+						'total_interactions': mouseMovements,
+						'sections_explored': Object.keys(scrollSections).length,
+						'engagement_quality': engagementScore > 50 ? 'engaged' : 'passive',
+						'visitor_type': totalTime > 120 ? 'interested_prospect' : totalTime > 60 ? 'casual_visitor' : 'quick_browse'
+					});
+				});
+
+				// Track initial page load with device info
+				gtag('event', 'session_start', {
+					'entry_point': 'initial_visit',
+					'device_type': portfolioTracker.getDeviceType(),
+					'screen_resolution': screen.width + 'x' + screen.height,
+					'browser': portfolioTracker.getBrowser(navigator.userAgent),
+					'connection_type': navigator.connection ? navigator.connection.effectiveType : 'unknown',
+					'referrer': document.referrer || 'direct',
+					'landing_section': portfolioTracker.getCurrentSection()
+				});
+				portfolioTracker.trackInteraction('Page Load', 'initial_visit', 'entry_point');
+				
+				// Start idle timer
+				resetIdleTimer();
+			});
+
+			// Enhanced error tracking
+			window.addEventListener('error', function(event) {
+				gtag('event', 'javascript_error', {
+					'error_message': event.message,
+					'error_source': event.filename,
+					'error_line': event.lineno,
+					'error_stack': event.error ? event.error.stack : 'No stack trace'
+				});
+			});
+		</script>
+
 		<!-- RB2B Visitor Tracking System with Email Notifications -->
 		<script>
 			class VisitorNotificationSystem {
@@ -751,8 +1207,13 @@
 						emailjs.init({ publicKey: this.config.emailjsPublicKey });
 					}
 					
-					console.log('🎯 Visitor Notification System initialized');
-					console.log('📝 Note: RB2B data is only accessible through their dashboard or Pro plan webhooks');
+					// Send enhanced visitor data to Google Analytics
+					gtag('event', 'visitor_notification_system', {
+						'system_status': 'initialized',
+						'rb2b_status': 'active',
+						'emailjs_status': typeof emailjs !== 'undefined' ? 'active' : 'inactive',
+						'tracking_mode': 'comprehensive'
+					});
 					
 					// Send notification after short delay to gather page data
 					setTimeout(() => {
@@ -762,17 +1223,36 @@
 
 				async sendVisitorNotification() {
 					try {
-						// Skip if already sent or no EmailJS configuration
-						if (this.notificationSent || !this.config.emailjsPublicKey || this.config.emailjsPublicKey === 'YOUR_EMAILJS_PUBLIC_KEY') {
-							console.log('⚠️ Skipping email notification - already sent or not configured');
-							return;
-						}
+											// Skip if already sent or no EmailJS configuration
+					if (this.notificationSent || !this.config.emailjsPublicKey || this.config.emailjsPublicKey === 'YOUR_EMAILJS_PUBLIC_KEY') {
+						gtag('event', 'email_notification', {
+							'status': 'skipped',
+							'reason': this.notificationSent ? 'already_sent' : 'not_configured',
+							'visitor_tracking': 'active'
+						});
+						return;
+					}
 
-						// Get visitor data we can actually access
-						const visitorData = await this.getAccessibleVisitorData();
-						
-						console.log('👀 Visitor detected - sending notification');
-						console.log('📊 Visitor data:', visitorData);
+					// Get visitor data we can actually access
+					const visitorData = await this.getAccessibleVisitorData();
+					
+					// Send comprehensive visitor data to Google Analytics
+					gtag('event', 'visitor_detected', {
+						'visitor_country': visitorData.country,
+						'visitor_city': visitorData.city,
+						'visitor_region': visitorData.region,
+						'visitor_ip': visitorData.ip,
+						'visitor_isp': visitorData.isp,
+						'device_type': visitorData.device,
+						'browser_type': visitorData.browser,
+						'operating_system': visitorData.os,
+						'screen_resolution': visitorData.screenResolution,
+						'language': visitorData.language,
+						'timezone': visitorData.timezone,
+						'referrer': visitorData.referrer,
+						'visit_timestamp': visitorData.visitTime,
+						'tracking_method': 'comprehensive_analytics'
+					});
 
 						const templateParams = {
 							to_email: this.config.yourEmail,
@@ -818,12 +1298,25 @@
 								templateParams
 							);
 							
-							console.log('✅ Visitor notification email sent successfully');
+							// Track successful email notification
+							gtag('event', 'email_notification', {
+								'status': 'sent_successfully',
+								'notification_type': 'visitor_detected',
+								'visitor_location': `${visitorData.city}, ${visitorData.country}`,
+								'device_type': visitorData.device,
+								'email_service': 'emailjs'
+							});
 							this.notificationSent = true;
 						}
 
 					} catch (error) {
-						console.error('❌ Failed to send visitor notification:', error);
+						// Track email notification failure
+						gtag('event', 'email_notification', {
+							'status': 'failed',
+							'error_type': 'send_failure',
+							'notification_type': 'visitor_detected',
+							'error_message': error.message || 'Unknown error'
+						});
 					}
 				}
 
@@ -871,7 +1364,13 @@
 							postal: data.postal
 						};
 					} catch (error) {
-						console.error('Could not fetch location data:', error);
+						// Track location data fetch failure
+						gtag('event', 'data_fetch_error', {
+							'error_type': 'location_data_failure',
+							'api_service': 'ipapi.co',
+							'error_message': error.message || 'Unknown error',
+							'fallback_used': true
+						});
 						return {
 							ip: 'Unknown',
 							city: 'Unknown',
