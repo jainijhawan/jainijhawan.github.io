@@ -36,6 +36,12 @@
 	<!-- Theme style  -->
 	<link rel="stylesheet" href="css/style.css">
 
+	<!-- RB2B Visitor Identification Script -->
+	<script>!function () {var reb2b = window.reb2b = window.reb2b || [];if (reb2b.invoked) return;reb2b.invoked = true;reb2b.methods = ["identify", "collect"];reb2b.factory = function (method) {return function () {var args = Array.prototype.slice.call(arguments);args.unshift(method);reb2b.push(args);return reb2b;};};for (var i = 0; i < reb2b.methods.length; i++) {var key = reb2b.methods[i];reb2b[key] = reb2b.factory(key);}reb2b.load = function (key) {var script = document.createElement("script");script.type = "text/javascript";script.async = true;script.src = "https://b2bjsstore.s3.us-west-2.amazonaws.com/b/" + key + "/46DJ4HWY3D61.js.gz";var first = document.getElementsByTagName("script")[0];first.parentNode.insertBefore(script, first);};reb2b.SNIPPET_VERSION = "1.0.1";reb2b.load("46DJ4HWY3D61");}();</script>
+
+	<!-- EmailJS for notifications -->
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+
 	<!-- Modernizr JS -->
 	<script src="js/modernizr-2.6.2.min.js"></script>
 	<!-- FOR IE9 below -->
@@ -714,6 +720,260 @@
 
 		<!-- Main -->
 		<script src="js/main.js"></script>
+
+		<!-- RB2B Visitor Notification System -->
+		<script>
+			class RB2BNotificationSystem {
+				constructor() {
+					this.config = {
+						emailjsPublicKey: "YOUR_EMAILJS_PUBLIC_KEY", // Replace with your EmailJS public key
+						emailjsServiceId: "YOUR_EMAILJS_SERVICE_ID", // Replace with your EmailJS service ID
+						emailjsTemplateId: "YOUR_EMAILJS_TEMPLATE_ID", // Replace with your EmailJS template ID
+						yourEmail: "jainijhawan@gmail.com"
+					};
+					this.visitorData = {};
+					this.init();
+				}
+
+				async init() {
+					// Initialize EmailJS
+					if (typeof emailjs !== 'undefined') {
+						emailjs.init({ publicKey: this.config.emailjsPublicKey });
+					}
+					
+					console.log('🚀 RB2B Visitor Tracking System initialized');
+					
+					// Start tracking
+					this.startTracking();
+				}
+
+				async startTracking() {
+					// Wait for page to load and RB2B to initialize
+					setTimeout(() => {
+						this.checkForRB2BData();
+					}, 3000);
+
+					// Check periodically for RB2B data
+					setInterval(() => {
+						this.checkForRB2BData();
+					}, 10000); // Check every 10 seconds
+				}
+
+				async checkForRB2BData() {
+					try {
+						// Get basic visitor data
+						const basicData = await this.getBasicVisitorData();
+						
+						// Check if RB2B has identified the visitor
+						const rb2bData = this.getRB2BData();
+						
+						// Combine all data
+						const combinedData = {
+							...basicData,
+							...rb2bData,
+							timestamp: new Date().toISOString()
+						};
+
+						// Send notification
+						await this.sendVisitorNotification(combinedData);
+						
+					} catch (error) {
+						console.error('Error in visitor tracking:', error);
+					}
+				}
+
+				getRB2BData() {
+					const rb2bData = {
+						identified: false,
+						source: 'RB2B',
+						name: 'Unknown',
+						email: 'Unknown',
+						company: 'Unknown',
+						linkedin: 'Unknown',
+						phone: 'Unknown'
+					};
+
+					// Check if RB2B has identified the visitor
+					// RB2B typically stores data in window.reb2b or localStorage
+					if (window.reb2b && window.reb2b.visitor) {
+						rb2bData.identified = true;
+						rb2bData.name = window.reb2b.visitor.name || 'Identified but name not available';
+						rb2bData.email = window.reb2b.visitor.email || 'Identified but email not available';
+						rb2bData.company = window.reb2b.visitor.company || 'Unknown';
+						rb2bData.linkedin = window.reb2b.visitor.linkedin || 'Unknown';
+						rb2bData.phone = window.reb2b.visitor.phone || 'Unknown';
+					}
+
+					// Also check localStorage for RB2B data
+					try {
+						const storedData = localStorage.getItem('reb2b_visitor_data');
+						if (storedData) {
+							const parsedData = JSON.parse(storedData);
+							if (parsedData.name || parsedData.email) {
+								rb2bData.identified = true;
+								rb2bData.name = parsedData.name || rb2bData.name;
+								rb2bData.email = parsedData.email || rb2bData.email;
+								rb2bData.company = parsedData.company || rb2bData.company;
+								rb2bData.linkedin = parsedData.linkedin || rb2bData.linkedin;
+								rb2bData.phone = parsedData.phone || rb2bData.phone;
+							}
+						}
+					} catch (e) {
+						console.log('No RB2B data in localStorage');
+					}
+
+					return rb2bData;
+				}
+
+				async getBasicVisitorData() {
+					// Get IP and location data
+					const locationData = await this.getLocationData();
+					
+					return {
+						// Page info
+						url: window.location.href,
+						title: document.title,
+						referrer: document.referrer || 'Direct visit',
+						
+						// Device info
+						userAgent: navigator.userAgent,
+						language: navigator.language,
+						platform: navigator.platform,
+						screenResolution: `${screen.width}x${screen.height}`,
+						
+						// Location
+						...locationData,
+						
+						// Time
+						timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+						localTime: new Date().toLocaleString(),
+
+						// Engagement
+						timeOnPage: Math.round((Date.now() - this.startTime) / 1000) || 0
+					};
+				}
+
+				async getLocationData() {
+					try {
+						const response = await fetch('https://ipapi.co/json/');
+						const data = await response.json();
+						
+						return {
+							ip: data.ip,
+							city: data.city,
+							region: data.region,
+							country: data.country_name,
+							countryCode: data.country_code,
+							isp: data.org,
+							postal: data.postal
+						};
+					} catch (error) {
+						return {
+							ip: 'Unknown',
+							city: 'Unknown',
+							region: 'Unknown',
+							country: 'Unknown',
+							isp: 'Unknown'
+						};
+					}
+				}
+
+				async sendVisitorNotification(data) {
+					try {
+						const isIdentified = data.identified;
+						const subject = isIdentified 
+							? `🎯 IDENTIFIED VISITOR: ${data.name} from ${data.company}` 
+							: `👀 New Visitor from ${data.city}, ${data.country}`;
+
+						const templateParams = {
+							to_email: this.config.yourEmail,
+							subject: subject,
+							
+							// Identification status
+							visitor_status: isIdentified ? 'IDENTIFIED ✅' : 'ANONYMOUS',
+							visitor_name: data.name,
+							visitor_email: data.email,
+							visitor_company: data.company,
+							visitor_linkedin: data.linkedin,
+							visitor_phone: data.phone,
+							
+							// Location
+							visitor_location: `${data.city}, ${data.region}, ${data.country}`,
+							visitor_ip: data.ip,
+							visitor_isp: data.isp,
+							
+							// Technical
+							visitor_device: this.getDeviceType(data.userAgent),
+							visitor_browser: this.getBrowser(data.userAgent),
+							visitor_os: this.getOS(data.userAgent),
+							
+							// Page info
+							page_url: data.url,
+							page_title: data.title,
+							referrer: data.referrer,
+							
+							// Time
+							visit_time: data.localTime,
+							timezone: data.timezone,
+							time_on_page: data.timeOnPage + ' seconds',
+							
+							// Full data as JSON
+							full_data: JSON.stringify(data, null, 2)
+						};
+
+						// Send email notification
+						if (typeof emailjs !== 'undefined') {
+							const response = await emailjs.send(
+								this.config.emailjsServiceId,
+								this.config.emailjsTemplateId,
+								templateParams
+							);
+							
+							if (isIdentified) {
+								console.log('🎯 IDENTIFIED visitor notification sent:', data.name);
+							} else {
+								console.log('👀 Anonymous visitor notification sent');
+							}
+						}
+
+					} catch (error) {
+						console.error('Failed to send visitor notification:', error);
+					}
+				}
+
+				// Helper functions
+				getDeviceType(userAgent) {
+					if (/Mobile|Android|iPhone/.test(userAgent)) return 'Mobile';
+					if (/Tablet|iPad/.test(userAgent)) return 'Tablet';
+					return 'Desktop';
+				}
+
+				getBrowser(userAgent) {
+					if (userAgent.includes('Chrome')) return 'Chrome';
+					if (userAgent.includes('Firefox')) return 'Firefox';
+					if (userAgent.includes('Safari')) return 'Safari';
+					if (userAgent.includes('Edge')) return 'Edge';
+					return 'Unknown';
+				}
+
+				getOS(userAgent) {
+					if (userAgent.includes('Windows')) return 'Windows';
+					if (userAgent.includes('Mac')) return 'macOS';
+					if (userAgent.includes('Linux')) return 'Linux';
+					if (userAgent.includes('Android')) return 'Android';
+					if (userAgent.includes('iOS')) return 'iOS';
+					return 'Unknown';
+				}
+			}
+
+			// Initialize the notification system
+			window.addEventListener('load', () => {
+				new RB2BNotificationSystem();
+			});
+
+			// Set start time for tracking
+			window.startTime = Date.now();
+		</script>
 
 </body>
 
