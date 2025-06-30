@@ -1516,19 +1516,7 @@
 			});
 		</script>
 
-		<!-- GA4 Debug Test Button (Remove after testing) -->
-		<div id="ga4-debug-button" style="position: fixed; bottom: 20px; right: 20px; z-index: 9999; background: #007bff; color: white; padding: 15px; border-radius: 8px; cursor: pointer; font-size: 14px; font-weight: bold; box-shadow: 0 4px 8px rgba(0,0,0,0.3); user-select: none;" onclick="window.gaDebugger.runManualTests();">
-			🔍 Test GA4 Tracking
-			<div style="font-size: 11px; margin-top: 5px; opacity: 0.9;">Click to run debug tests</div>
-		</div>
 
-		<script>
-			// Hide debug button after 10 minutes (for production)
-			setTimeout(() => {
-				const debugBtn = document.getElementById('ga4-debug-button');
-				if (debugBtn) debugBtn.style.display = 'none';
-			}, 600000); // 10 minutes
-		</script>
 
 </body>
 
