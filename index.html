@@ -39,8 +39,8 @@
 	<!-- RB2B Visitor Identification Script -->
 	<script>!function () {var reb2b = window.reb2b = window.reb2b || [];if (reb2b.invoked) return;reb2b.invoked = true;reb2b.methods = ["identify", "collect"];reb2b.factory = function (method) {return function () {var args = Array.prototype.slice.call(arguments);args.unshift(method);reb2b.push(args);return reb2b;};};for (var i = 0; i < reb2b.methods.length; i++) {var key = reb2b.methods[i];reb2b[key] = reb2b.factory(key);}reb2b.load = function (key) {var script = document.createElement("script");script.type = "text/javascript";script.async = true;script.src = "https://b2bjsstore.s3.us-west-2.amazonaws.com/b/" + key + "/46DJ4HWY3D61.js.gz";var first = document.getElementsByTagName("script")[0];first.parentNode.insertBefore(script, first);};reb2b.SNIPPET_VERSION = "1.0.1";reb2b.load("46DJ4HWY3D61");}();</script>
 
-	<!-- EmailJS for notifications -->
-	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+	<!-- EmailJS for notifications - COMMENTED OUT FOR NOW -->
+	<!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script> -->
 
 	<!-- Modernizr JS -->
 	<script src="js/modernizr-2.6.2.min.js"></script>
@@ -721,33 +721,23 @@
 		<!-- Main -->
 		<script src="js/main.js"></script>
 
-		<!-- RB2B Visitor Notification System -->
+		<!-- RB2B Visitor Tracking System - Email Notifications Commented Out -->
 		<script>
-			class RB2BNotificationSystem {
+			class RB2BTracker {
 				constructor() {
-					this.config = {
-						emailjsPublicKey: "YOUR_EMAILJS_PUBLIC_KEY", // Replace with your EmailJS public key
-						emailjsServiceId: "YOUR_EMAILJS_SERVICE_ID", // Replace with your EmailJS service ID
-						emailjsTemplateId: "YOUR_EMAILJS_TEMPLATE_ID", // Replace with your EmailJS template ID
-						yourEmail: "jainijhawan@gmail.com"
-					};
-					this.visitorData = {};
+					console.log('🎯 RB2B Visitor Tracking System initialized');
+					this.startTime = Date.now();
 					this.init();
 				}
 
-				async init() {
-					// Initialize EmailJS
-					if (typeof emailjs !== 'undefined') {
-						emailjs.init({ publicKey: this.config.emailjsPublicKey });
-					}
-					
-					console.log('🚀 RB2B Visitor Tracking System initialized');
-					
+				init() {
 					// Start tracking
 					this.startTracking();
 				}
 
 				async startTracking() {
+					console.log('🚀 Starting RB2B visitor tracking...');
+					
 					// Wait for page to load and RB2B to initialize
 					setTimeout(() => {
 						this.checkForRB2BData();
@@ -774,8 +764,8 @@
 							timestamp: new Date().toISOString()
 						};
 
-						// Send notification
-						await this.sendVisitorNotification(combinedData);
+						// Log visitor data to console
+						this.logVisitorData(combinedData);
 						
 					} catch (error) {
 						console.error('Error in visitor tracking:', error);
@@ -794,7 +784,6 @@
 					};
 
 					// Check if RB2B has identified the visitor
-					// RB2B typically stores data in window.reb2b or localStorage
 					if (window.reb2b && window.reb2b.visitor) {
 						rb2bData.identified = true;
 						rb2bData.name = window.reb2b.visitor.name || 'Identified but name not available';
@@ -878,67 +867,27 @@
 					}
 				}
 
-				async sendVisitorNotification(data) {
-					try {
-						const isIdentified = data.identified;
-						const subject = isIdentified 
-							? `🎯 IDENTIFIED VISITOR: ${data.name} from ${data.company}` 
-							: `👀 New Visitor from ${data.city}, ${data.country}`;
-
-						const templateParams = {
-							to_email: this.config.yourEmail,
-							subject: subject,
-							
-							// Identification status
-							visitor_status: isIdentified ? 'IDENTIFIED ✅' : 'ANONYMOUS',
-							visitor_name: data.name,
-							visitor_email: data.email,
-							visitor_company: data.company,
-							visitor_linkedin: data.linkedin,
-							visitor_phone: data.phone,
-							
-							// Location
-							visitor_location: `${data.city}, ${data.region}, ${data.country}`,
-							visitor_ip: data.ip,
-							visitor_isp: data.isp,
-							
-							// Technical
-							visitor_device: this.getDeviceType(data.userAgent),
-							visitor_browser: this.getBrowser(data.userAgent),
-							visitor_os: this.getOS(data.userAgent),
-							
-							// Page info
-							page_url: data.url,
-							page_title: data.title,
-							referrer: data.referrer,
-							
-							// Time
-							visit_time: data.localTime,
-							timezone: data.timezone,
-							time_on_page: data.timeOnPage + ' seconds',
-							
-							// Full data as JSON
-							full_data: JSON.stringify(data, null, 2)
-						};
-
-						// Send email notification
-						if (typeof emailjs !== 'undefined') {
-							const response = await emailjs.send(
-								this.config.emailjsServiceId,
-								this.config.emailjsTemplateId,
-								templateParams
-							);
-							
-							if (isIdentified) {
-								console.log('🎯 IDENTIFIED visitor notification sent:', data.name);
-							} else {
-								console.log('👀 Anonymous visitor notification sent');
-							}
-						}
-
-					} catch (error) {
-						console.error('Failed to send visitor notification:', error);
+				logVisitorData(data) {
+					const isIdentified = data.identified;
+					
+					if (isIdentified) {
+						console.log('🎯 IDENTIFIED VISITOR DETECTED!');
+						console.log('👤 Name:', data.name);
+						console.log('📧 Email:', data.email);
+						console.log('🏢 Company:', data.company);
+						console.log('🔗 LinkedIn:', data.linkedin);
+						console.log('📞 Phone:', data.phone);
+					} else {
+						console.log('👀 Anonymous visitor detected');
 					}
+					
+					console.log('📍 Location:', `${data.city}, ${data.region}, ${data.country}`);
+					console.log('🌐 IP:', data.ip);
+					console.log('💻 Device:', this.getDeviceType(data.userAgent));
+					console.log('🔗 Page:', data.url);
+					console.log('⏰ Time on page:', data.timeOnPage, 'seconds');
+					console.log('📊 Full data:', data);
+					console.log('─────────────────────────────');
 				}
 
 				// Helper functions
@@ -947,32 +896,29 @@
 					if (/Tablet|iPad/.test(userAgent)) return 'Tablet';
 					return 'Desktop';
 				}
-
-				getBrowser(userAgent) {
-					if (userAgent.includes('Chrome')) return 'Chrome';
-					if (userAgent.includes('Firefox')) return 'Firefox';
-					if (userAgent.includes('Safari')) return 'Safari';
-					if (userAgent.includes('Edge')) return 'Edge';
-					return 'Unknown';
-				}
-
-				getOS(userAgent) {
-					if (userAgent.includes('Windows')) return 'Windows';
-					if (userAgent.includes('Mac')) return 'macOS';
-					if (userAgent.includes('Linux')) return 'Linux';
-					if (userAgent.includes('Android')) return 'Android';
-					if (userAgent.includes('iOS')) return 'iOS';
-					return 'Unknown';
-				}
 			}
 
-			// Initialize the notification system
+			// Initialize the tracking system
 			window.addEventListener('load', () => {
-				new RB2BNotificationSystem();
+				new RB2BTracker();
 			});
 
-			// Set start time for tracking
-			window.startTime = Date.now();
+			// EMAIL NOTIFICATION SYSTEM - COMMENTED OUT FOR NOW
+			/*
+			// This will be uncommented later when we want to add email notifications
+			class RB2BNotificationSystem {
+				constructor() {
+					this.config = {
+						emailjsPublicKey: "YOUR_EMAILJS_PUBLIC_KEY",
+						emailjsServiceId: "YOUR_EMAILJS_SERVICE_ID", 
+						emailjsTemplateId: "YOUR_EMAILJS_TEMPLATE_ID",
+						yourEmail: "jainijhawan@gmail.com"
+					};
+					// ... rest of email notification code
+				}
+				// ... email notification methods
+			}
+			*/
 		</script>
 
 </body>
