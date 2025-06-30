@@ -1,0 +1,23 @@
+{
+  "name": "rb2b-webhook-integration",
+  "version": "1.0.0",
+  "description": "RB2B visitor identification with webhook integration and email notifications",
+  "main": "index.html",
+  "scripts": {
+    "build": "echo 'Build complete - static site with Netlify functions'",
+    "dev": "netlify dev",
+    "deploy": "netlify deploy --prod"
+  },
+  "keywords": [
+    "rb2b",
+    "visitor-tracking",
+    "webhook",
+    "netlify-functions",
+    "emailjs"
+  ],
+  "author": "Jai Nijhawan",
+  "license": "MIT",
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  }
+} 
