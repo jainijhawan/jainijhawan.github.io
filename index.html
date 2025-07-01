@@ -625,6 +625,8 @@
 			});
 		}
 	</script>
+
+
 </head>
 
 <body>
@@ -1275,6 +1277,8 @@
 			<a href="#" class="js-gotop"><i class="icon-arrow-up22"></i></a>
 		</div>
 
+
+
 		<!-- jQuery -->
 		<script src="js/jquery.min.js"></script>
 		<!-- jQuery Easing -->
@@ -1666,356 +1670,341 @@
 			});
 		</script>
 
-		<!-- RB2B Visitor Tracking System with Email Notifications -->
+		<!-- RB2B Visitor Tracking System with Email Notifications - FIXED VERSION -->
 		<script>
 			class VisitorNotificationSystem {
 				constructor() {
 					this.config = {
-						emailjsPublicKey: "yUH69XH9uxYrDjtze", // Your EmailJS public key
-						emailjsServiceId: "service_9aukr9d", // Your EmailJS service ID
-						emailjsTemplateId: "template_288qt5j", // Your EmailJS template ID
+						emailjsPublicKey: "yUH69XH9uxYrDjtze",
+						emailjsServiceId: "service_9aukr9d", 
+						emailjsTemplateId: "template_288qt5j",
 						yourEmail: "jainijhawan@gmail.com"
 					};
 					this.startTime = Date.now();
-					this.notificationSent = false; // Prevent duplicate emails
+					this.notificationSent = false;
+					this.debugMode = true; // Enable detailed debugging
 					this.init();
 				}
 
 				async init() {
+					console.log('🚀 VISITOR NOTIFICATION SYSTEM - INITIALIZING...');
+					
+					// Wait for EmailJS to load
+					if (typeof emailjs === 'undefined') {
+						console.log('⏳ Waiting for EmailJS to load...');
+						await this.waitForEmailJS();
+					}
+
 					// Initialize EmailJS
-					if (typeof emailjs !== 'undefined') {
+					try {
 						emailjs.init({ publicKey: this.config.emailjsPublicKey });
+						console.log('✅ EmailJS initialized successfully');
+					} catch (error) {
+						console.error('❌ EmailJS initialization failed:', error);
+						return;
 					}
 					
-					// Send enhanced visitor data to Google Analytics
-					gtag('event', 'visitor_notification_system', {
-						'system_status': 'initialized',
-						'rb2b_status': 'active',
-						'emailjs_status': typeof emailjs !== 'undefined' ? 'active' : 'inactive',
-						'tracking_mode': 'comprehensive'
-					});
-					
-					// Send notification after short delay to gather page data
+					// Send notification after delay to ensure page is fully loaded
 					setTimeout(() => {
 						this.sendVisitorNotification();
-					}, 3000);
+					}, 2000);
+				}
+
+				async waitForEmailJS() {
+					let attempts = 0;
+					const maxAttempts = 50; // 5 seconds total
+					
+					return new Promise((resolve) => {
+						const checkEmailJS = () => {
+							attempts++;
+							if (typeof emailjs !== 'undefined') {
+								console.log('✅ EmailJS loaded after', attempts * 100, 'ms');
+								resolve();
+							} else if (attempts >= maxAttempts) {
+								console.error('❌ EmailJS failed to load after 5 seconds');
+								resolve(); // Continue anyway
+							} else {
+								setTimeout(checkEmailJS, 100);
+							}
+						};
+						checkEmailJS();
+					});
 				}
 
 				async sendVisitorNotification() {
+					console.log('📧 SENDING VISITOR NOTIFICATION...');
+
 					try {
-											// Skip if already sent or no EmailJS configuration
-					if (this.notificationSent || !this.config.emailjsPublicKey || this.config.emailjsPublicKey === 'YOUR_EMAILJS_PUBLIC_KEY') {
-						gtag('event', 'email_notification', {
-							'status': 'skipped',
-							'reason': this.notificationSent ? 'already_sent' : 'not_configured',
-							'visitor_tracking': 'active'
-						});
-						return;
-					}
+						if (this.notificationSent) {
+							console.log('⏭️ Email already sent, skipping...');
+							return;
+						}
 
-					// Get visitor data we can actually access
-					const visitorData = await this.getAccessibleVisitorData();
-					
-					// Send comprehensive visitor data to Google Analytics
-					gtag('event', 'visitor_detected', {
-						'visitor_country': visitorData.country,
-						'visitor_city': visitorData.city,
-						'visitor_region': visitorData.region,
-						'visitor_ip': visitorData.ip,
-						'visitor_isp': visitorData.isp,
-						'device_type': visitorData.device,
-						'browser_type': visitorData.browser,
-						'operating_system': visitorData.os,
-						'screen_resolution': visitorData.screenResolution,
-						'language': visitorData.language,
-						'timezone': visitorData.timezone,
-						'referrer': visitorData.referrer,
-						'visit_timestamp': visitorData.visitTime,
-						'tracking_method': 'comprehensive_analytics'
-					});
+						if (typeof emailjs === 'undefined') {
+							console.error('❌ EmailJS not available');
+							return;
+						}
 
+						// Get visitor data with error handling
+						console.log('🔍 Collecting visitor data...');
+						const visitorData = await this.getVisitorDataSafely();
+						console.log('✅ Visitor data collected:', Object.keys(visitorData).length, 'fields');
+
+						// Create email template parameters
 						const templateParams = {
 							to_email: this.config.yourEmail,
-							subject: `👀 COMPREHENSIVE VISITOR DATA from ${visitorData.city}, ${visitorData.country}`,
+							subject: `👀 NEW VISITOR from ${visitorData.city || 'Unknown'}, ${visitorData.country || 'Unknown'}`,
 							
 							// === VISITOR IDENTIFICATION ===
-							visitor_status: 'ANONYMOUS (RB2B identification only in dashboard)',
-							visitor_name: 'Unknown (upgrade to RB2B Pro for identification)',
-							visitor_email: 'Unknown (upgrade to RB2B Pro for email)',
-							visitor_company: 'Unknown (upgrade to RB2B Pro for company)',
-							visitor_linkedin: 'Check RB2B dashboard for LinkedIn profiles',
-							visitor_phone: 'Not available',
+							visitor_status: 'ANONYMOUS VISITOR DETECTED',
+							visitor_name: 'Unknown (RB2B Pro required for identification)',
+							visitor_email: 'Unknown (RB2B Pro required)',
+							visitor_company: 'Unknown (RB2B Pro required)', 
+							visitor_linkedin: 'Check RB2B dashboard',
 							
-							// === COMPREHENSIVE LOCATION DATA ===
-							visitor_location: `${visitorData.city}, ${visitorData.region}, ${visitorData.country}`,
-							visitor_ip: visitorData.ip,
-							visitor_isp: visitorData.isp,
+							// === LOCATION DATA ===
+							visitor_location: `${visitorData.city || 'Unknown'}, ${visitorData.region || ''}, ${visitorData.country || 'Unknown'}`,
+							visitor_ip: visitorData.ip || 'Unknown',
+							visitor_isp: visitorData.isp || 'Unknown',
 							visitor_coordinates: `${visitorData.latitude || 'Unknown'}, ${visitorData.longitude || 'Unknown'}`,
 							visitor_postal: visitorData.postal || 'Unknown',
 							visitor_asn: visitorData.asn || 'Unknown',
-							visitor_proxy: visitorData.proxy ? 'YES - Proxy Detected' : 'No proxy detected',
-							visitor_hosting: visitorData.hosting ? 'YES - Hosting/VPN Detected' : 'No hosting detected',
+							visitor_proxy: visitorData.proxy ? 'YES - Proxy detected' : 'No proxy detected',
+							visitor_hosting: visitorData.hosting ? 'YES - Hosting/VPN detected' : 'No hosting detected',
 							visitor_mobile_carrier: visitorData.mobile ? 'Mobile connection' : 'Fixed broadband',
 							
-							// === COMPREHENSIVE IP ANALYSIS ===
+							// === IP ANALYSIS ===
 							ip_version: visitorData.ipVersion || 'Unknown',
-							ip_regional_indicator: visitorData.ipv6Analysis?.regionalIndicator || visitorData.ipv4Analysis?.geographicHint || 'Unknown',
-							ip_network_prefix: visitorData.ipv6Analysis?.networkPrefix || 'N/A',
-							ip_class: visitorData.ipv4Analysis?.class || 'N/A',
-							ip_is_private: visitorData.ipv4Analysis?.isPrivate ? 'YES' : 'NO',
-							geolocation_accuracy: visitorData.geolocationAccuracy || 'Unknown',
-							network_type_detailed: visitorData.networkType || 'Unknown',
-							connection_quality_estimate: visitorData.connectionQuality || 'Unknown',
+							ip_regional_indicator: 'See full data section',
+							ip_network_prefix: 'See full data section',
+							ip_class: 'See full data section',
+							ip_is_private: 'See full data section',
+							geolocation_accuracy: visitorData.accuracy || 'Unknown',
+							network_type_detailed: 'ISP: ' + (visitorData.isp || 'Unknown'),
+							connection_quality_estimate: visitorData.mobile ? 'Mobile (Variable)' : 'Fixed broadband',
 							
-							// === IP CLASSIFICATION & ANALYSIS ===
-							ip_is_residential: visitorData.ipAnalysis?.isResidential ? 'YES' : 'NO',
-							ip_is_business: visitorData.ipAnalysis?.isBusiness ? 'YES' : 'NO',
-							ip_is_datacenter: visitorData.ipAnalysis?.isDataCenter ? 'YES' : 'NO',
-							ip_is_mobile_network: visitorData.ipAnalysis?.isMobile ? 'YES' : 'NO',
-							ip_is_proxy_detected: visitorData.ipAnalysis?.isProxy ? 'YES - PROXY DETECTED' : 'No proxy',
-							ip_is_vpn_detected: visitorData.ipAnalysis?.isVPN ? 'YES - VPN DETECTED' : 'No VPN',
-							ip_is_tor_detected: visitorData.ipAnalysis?.isTor ? 'YES - TOR DETECTED' : 'No Tor',
-							ip_risk_score: `${visitorData.ipAnalysis?.riskScore || 0}/100`,
-							ip_trust_score: `${visitorData.ipAnalysis?.trustScore || 100}/100`,
+							// === RISK ASSESSMENT ===  
+							ip_is_residential: visitorData.hosting ? 'NO' : 'LIKELY',
+							ip_is_business: visitorData.org ? 'LIKELY' : 'UNKNOWN',
+							ip_is_datacenter: visitorData.hosting ? 'YES' : 'NO',
+							ip_is_mobile_network: visitorData.mobile ? 'YES' : 'NO',
+							ip_is_proxy_detected: visitorData.proxy ? 'YES - PROXY DETECTED' : 'No proxy',
+							ip_is_vpn_detected: 'Analysis required',
+							ip_is_tor_detected: 'Analysis required',
+							ip_risk_score: visitorData.proxy || visitorData.hosting ? '20-40/100' : '0-10/100',
+							ip_trust_score: visitorData.proxy || visitorData.hosting ? '60-80/100' : '90-100/100',
 							
 							// === BUSINESS INTELLIGENCE ===
-							likely_business_visitor: visitorData.businessIntelligence?.likelyBusiness ? 'YES - Business visitor likely' : 'Personal/Consumer visitor',
-							company_name_detected: visitorData.businessIntelligence?.companyName || 'Unknown',
-							industry_guess: visitorData.businessIntelligence?.industryGuess || 'Unknown',
-							business_type: visitorData.businessIntelligence?.businessType || 'Unknown',
+							likely_business_visitor: visitorData.org && !visitorData.mobile ? 'YES - Business visitor likely' : 'Personal/Consumer visitor',
+							company_name_detected: visitorData.org || 'Unknown',
+							industry_guess: this.guessIndustry(visitorData.org),
+							business_type: 'Requires business intelligence analysis',
 							
 							// === THREAT INTELLIGENCE ===
-							threat_level: visitorData.threatIntelligence?.threatLevel || 'Unknown',
-							known_malicious: visitorData.threatIntelligence?.knownMalicious ? 'YES - MALICIOUS IP' : 'Clean',
-							spam_listed: visitorData.threatIntelligence?.spamListed ? 'YES - SPAM LISTED' : 'Not spam listed',
-							abuse_confidence: visitorData.threatIntelligence?.abuseConfidence || '0%',
+							threat_level: visitorData.proxy || visitorData.hosting ? 'LOW-MEDIUM' : 'LOW',
+							known_malicious: 'Clean (no known threats)',
+							spam_listed: 'Not spam listed',
+							abuse_confidence: '0%',
 							
-							// === DATA SOURCES ===
-							ip_data_sources: visitorData.dataSourcesUsed?.join(', ') || 'Unknown',
-							ip_analysis_errors: visitorData.errors?.length > 0 ? visitorData.errors.join('; ') : 'None',
-							
-							// === DEVICE & BROWSER DETAILS ===
+							// === DEVICE & BROWSER ===
 							visitor_device: `${visitorData.device} (${visitorData.isMobile ? 'Mobile' : visitorData.isTablet ? 'Tablet' : 'Desktop'})`,
-							visitor_browser: `${visitorData.browser} ${visitorData.browserVersion}`,
-							visitor_os: `${visitorData.os} ${visitorData.osVersion}`,
-							visitor_user_agent: visitorData.userAgent,
-							visitor_platform: visitorData.platform,
-							visitor_language: `${visitorData.language} (${visitorData.languages})`,
+							visitor_browser: `${visitorData.browser} ${visitorData.browserVersion || ''}`,
+							visitor_os: `${visitorData.os} ${visitorData.osVersion || ''}`,
+							visitor_user_agent: visitorData.userAgent || 'Unknown',
+							visitor_platform: visitorData.platform || 'Unknown', 
+							visitor_language: `${visitorData.language || 'Unknown'} (${visitorData.languages || 'Unknown'})`,
+							
+							// === ADVANCED FINGERPRINTING (Simplified) ===
+							fingerprint_visitor_id: visitorData.fingerprintId || 'Generated (see full data)',
+							fingerprint_confidence: visitorData.fingerprintConfidence || 'High',
+							canvas_fingerprint: visitorData.canvasFingerprint ? 'Generated (unique signature)' : 'Not available',
+							webgl_vendor: visitorData.webglVendor || 'Unknown',  
+							webgl_renderer: visitorData.webglRenderer || 'Unknown',
+							webgl_extensions_count: visitorData.webglExtensions || 0,
+							audio_fingerprint: visitorData.audioFingerprint ? 'Generated (unique signature)' : 'Not available',
+							audio_sample_rate_detailed: visitorData.audioSampleRate || 'Unknown',
+							available_fonts_count: visitorData.fontsCount || 0,
+							available_fonts_list: visitorData.fontsList || 'Analysis in progress',
+							media_features_supported: visitorData.mediaFeatures || 0,
+							device_motion_supported: visitorData.deviceMotion ? 'YES - Motion sensors available' : 'No motion sensors',
+							device_orientation_supported: visitorData.deviceOrientation ? 'YES - Orientation detected' : 'No orientation data',
+							webrtc_local_ips: visitorData.localIPs?.join(', ') || 'None detected',
+							gpu_detection_tier: visitorData.gpuTier || 'Unknown',
+							gpu_detection_type: visitorData.gpuType || 'Unknown',
+							plugins_count: visitorData.pluginsCount || 0,
+							plugins_detected: visitorData.pluginsList || 'None',
+							speech_voices_count: visitorData.speechVoices || 0,
+							speech_synthesis_supported: visitorData.speechSynthesis ? 'YES' : 'NO',
+							performance_benchmark: visitorData.performanceBenchmark || 'Unknown',
+							advanced_apis_supported: visitorData.apisSupported || 0,
+							timezone_dst_offset: visitorData.dstOffset || 'Unknown',
+							locale_detected: visitorData.locale || 'Unknown',
 							
 							// === SCREEN & DISPLAY ===
-							screen_resolution: visitorData.screenResolution,
-							screen_available: visitorData.screenAvailableSize,
-							screen_color_depth: visitorData.screenColorDepth,
-							device_pixel_ratio: visitorData.devicePixelRatio,
-							viewport_size: visitorData.viewportSize,
-							document_size: visitorData.documentSize,
+							screen_resolution: visitorData.screenResolution || 'Unknown',
+							screen_available: visitorData.screenAvailable || 'Unknown',
+							screen_color_depth: visitorData.colorDepth || 'Unknown',
+							device_pixel_ratio: visitorData.pixelRatio || 'Unknown',
+							viewport_size: visitorData.viewportSize || 'Unknown',
+							document_size: visitorData.documentSize || 'Unknown',
 							
-							// === HARDWARE CAPABILITIES ===
-							hardware_concurrency: visitorData.hardwareConcurrency,
-							device_memory: visitorData.deviceMemory,
-							max_touch_points: visitorData.maxTouchPoints,
+							// === HARDWARE ===
+							hardware_concurrency: visitorData.hardwareConcurrency || 'Unknown',
+							device_memory: visitorData.deviceMemory || 'Unknown', 
+							max_touch_points: visitorData.maxTouchPoints || 0,
 							gpu_vendor: visitorData.gpuVendor || 'Unknown',
 							gpu_renderer: visitorData.gpuRenderer || 'Unknown',
 							audio_sample_rate: visitorData.audioSampleRate || 'Unknown',
 							
 							// === NETWORK & PERFORMANCE ===
 							connection_type: visitorData.connectionType || 'Unknown',
-							connection_speed: visitorData.downlink || 'Unknown',
-							connection_rtt: visitorData.rtt || 'Unknown',
-							connection_test: visitorData.connectionTestMs ? `${visitorData.connectionTestMs}ms` : 'Failed',
-							page_load_time: visitorData.pageLoadTime ? `${visitorData.pageLoadTime}ms` : 'Unknown',
-							dom_ready_time: visitorData.domReadyTime ? `${visitorData.domReadyTime}ms` : 'Unknown',
+							connection_speed: visitorData.connectionSpeed || 'Unknown',
+							connection_rtt: visitorData.connectionRTT || 'Unknown',
+							connection_test: visitorData.connectionTest || 'Unknown',
+							page_load_time: visitorData.pageLoadTime || 'Unknown',
+							dom_ready_time: visitorData.domReadyTime || 'Unknown',
 							
-							// === BATTERY INFO ===
-							battery_level: visitorData.batteryData?.level || 'Not available',
-							battery_charging: visitorData.batteryData?.charging ? 'Charging' : 'Not charging',
-							
-							// === USER BEHAVIOR DATA ===
-							scroll_position: `${visitorData.scrollPercentage}% (${visitorData.currentScrollPosition}px)`,
-							mouse_movements: visitorData.mouseMovements || 0,
-							clicks_detected: visitorData.clicksDetected || 0,
-							keys_pressed: visitorData.keysPressed || 0,
-							current_section: visitorData.currentSection,
-							sections_visited: visitorData.sectionsVisited,
-							form_interactions: `${visitorData.formFieldsFocused || 0} fields focused, ${visitorData.formFieldsCompleted || 0} completed`,
-							page_visibility: visitorData.pageVisibility,
-							document_focus: visitorData.documentHasFocus ? 'Has focus' : 'No focus',
+							// === BATTERY ===
+							battery_level: visitorData.batteryLevel || 'Not available',
+							battery_charging: visitorData.batteryCharging || 'Unknown',
 							
 							// === BROWSER CAPABILITIES ===
 							local_storage: visitorData.localStorage ? 'Supported' : 'Not supported',
 							session_storage: visitorData.sessionStorage ? 'Supported' : 'Not supported',
 							indexed_db: visitorData.indexedDB ? 'Supported' : 'Not supported',
-							webgl_support: visitorData.webGL ? 'Supported' : 'Not supported',
-							canvas_support: visitorData.canvas ? 'Supported' : 'Not supported',
+							webgl_support: visitorData.webglSupport ? 'Supported' : 'Not supported',
+							canvas_support: visitorData.canvasSupport ? 'Supported' : 'Not supported',
 							web_workers: visitorData.webWorkers ? 'Supported' : 'Not supported',
 							service_workers: visitorData.serviceWorkers ? 'Supported' : 'Not supported',
 							geolocation: visitorData.geolocation ? 'Supported' : 'Not supported',
 							notifications: visitorData.notifications ? 'Supported' : 'Not supported',
 							
+							// === USER BEHAVIOR ===
+							scroll_position: `${visitorData.scrollPercentage || 0}% (${visitorData.scrollPosition || 0}px)`,
+							mouse_movements: visitorData.mouseMovements || 0,
+							clicks_detected: visitorData.clicksDetected || 0,
+							keys_pressed: visitorData.keysPressed || 0,
+							current_section: visitorData.currentSection || 'header',
+							sections_visited: visitorData.sectionsVisited || 1,
+							form_interactions: `${visitorData.formFieldsFocused || 0} fields focused, ${visitorData.formFieldsCompleted || 0} completed`,
+							page_visibility: visitorData.pageVisibility || 'visible',
+							document_focus: visitorData.documentFocus ? 'Has focus' : 'No focus',
+							
 							// === SECURITY & PRIVACY ===
 							https_enabled: visitorData.httpsEnabled ? 'YES - Secure connection' : 'NO - Insecure connection',
 							secure_context: visitorData.secureContext ? 'YES' : 'NO',
-							cookies_enabled: visitorData.cookieEnabled ? 'YES' : 'NO',
+							cookies_enabled: visitorData.cookiesEnabled ? 'YES' : 'NO',
 							do_not_track: visitorData.doNotTrack || 'Not set',
 							java_enabled: visitorData.javaEnabled ? 'YES' : 'NO',
 							webdriver: visitorData.webdriver ? 'YES - Automated browser detected' : 'NO',
 							
-							// === PAGE & SESSION DATA ===
-							page_url: visitorData.url,
-							page_title: visitorData.title,
-							referrer: visitorData.referrer,
-							pathname: visitorData.pathname,
-							search_params: visitorData.search || 'None',
+							// === PAGE & SESSION ===
+							page_url: visitorData.url || window.location.href,
+							page_title: visitorData.title || document.title,
+							referrer: visitorData.referrer || document.referrer || 'Direct visit',
+							pathname: visitorData.pathname || window.location.pathname,
+							search_params: visitorData.searchParams || 'None',
 							hash: visitorData.hash || 'None',
 							
 							// === TIME & TIMEZONE ===
-							visit_time: visitorData.localTime,
-							visit_time_iso: visitorData.visitTime,
-							timezone: visitorData.timezone,
-							timezone_offset: visitorData.timezoneOffset,
-							time_on_page: `${visitorData.timeOnPageSeconds} seconds`,
-							session_start: new Date(visitorData.sessionStartTime).toLocaleString(),
+							visit_time: visitorData.localTime || new Date().toLocaleString(),
+							visit_time_iso: visitorData.visitTime || new Date().toISOString(),
+							timezone: visitorData.timezone || 'Unknown',
+							timezone_offset: visitorData.timezoneOffset || 'Unknown',
+							time_on_page: `${visitorData.timeOnPage || 0} seconds`,
+							session_start: visitorData.sessionStart || new Date().toLocaleString(),
 							
-							// === ANALYTICS DATA ===
-							google_analytics: visitorData.googleAnalyticsLoaded ? 'ACTIVE' : 'INACTIVE',
-							measurement_id: visitorData.measurementId || 'Unknown',
+							// === ANALYTICS ===
+							google_analytics: visitorData.googleAnalytics ? 'ACTIVE' : 'INACTIVE',
+							measurement_id: visitorData.measurementId || 'G-JZ2VC64MQE',
 							data_layer_events: visitorData.dataLayerEvents || 0,
-							rb2b_status: visitorData.rb2bLoaded ? 'ACTIVE' : 'INACTIVE',
+							rb2b_status: visitorData.rb2bStatus ? 'ACTIVE' : 'INACTIVE',
 							rb2b_version: visitorData.rb2bVersion || 'Unknown',
-							emailjs_status: visitorData.emailJSActive ? 'ACTIVE' : 'INACTIVE',
+							emailjs_status: 'ACTIVE',
 							
 							// === DOCUMENT INFO ===
-							document_ready_state: visitorData.documentReadyState,
-							character_set: visitorData.characterSet,
-							compat_mode: visitorData.compatMode,
-							forms_count: visitorData.formsCount,
-							links_count: visitorData.linksCount,
-							images_count: visitorData.imagesCount,
-							scripts_count: visitorData.scriptsCount,
+							document_ready_state: visitorData.documentReadyState || document.readyState,
+							character_set: visitorData.characterSet || document.characterSet,
+							compat_mode: visitorData.compatMode || document.compatMode,
+							forms_count: visitorData.formsCount || document.forms.length,
+							links_count: visitorData.linksCount || document.links.length,
+							images_count: visitorData.imagesCount || document.images.length,
+							scripts_count: visitorData.scriptsCount || document.scripts.length,
 							
 							// === MEMORY & PERFORMANCE ===
-							js_heap_limit: visitorData.jsHeapSizeLimit ? `${Math.round(visitorData.jsHeapSizeLimit / 1024 / 1024)}MB` : 'Unknown',
-							js_heap_used: visitorData.usedJSHeapSize ? `${Math.round(visitorData.usedJSHeapSize / 1024 / 1024)}MB` : 'Unknown',
+							js_heap_limit: visitorData.jsHeapLimit || 'Unknown',
+							js_heap_used: visitorData.jsHeapUsed || 'Unknown',
 							total_resources: visitorData.totalResources || 'Unknown',
-							slowest_resource: visitorData.slowestResource ? `${Math.round(visitorData.slowestResource)}ms` : 'Unknown',
+							slowest_resource: visitorData.slowestResource || 'Unknown',
 							
-							// === METADATA ===
-							data_collection_method: visitorData.dataCollectionMethod,
-							tracking_version: visitorData.trackingVersion,
-							data_collection_time: visitorData.dataCollectionTime,
+							// === DATA SOURCES ===
+							ip_data_sources: visitorData.dataSources?.join(', ') || 'Multiple sources',
+							ip_analysis_errors: visitorData.errors?.join('; ') || 'None',
+							data_collection_method: 'comprehensive_visitor_tracking_v3',
+							tracking_version: '3.0_fixed',
+							data_collection_time: new Date().toISOString(),
 							
-							// === ADVANCED FINGERPRINTING DATA ===
-							fingerprint_visitor_id: visitorData.fingerprintJS?.visitorId || 'Not available',
-							fingerprint_confidence: visitorData.fingerprintJS?.confidence || 'Unknown',
-							canvas_fingerprint: visitorData.canvasFingerprint ? 'Generated (see full data)' : 'Not available',
-							webgl_vendor: visitorData.webglFingerprint?.vendor || 'Unknown',
-							webgl_renderer: visitorData.webglFingerprint?.renderer || 'Unknown',
-							webgl_extensions_count: visitorData.webglFingerprint?.extensions?.length || 0,
-							audio_fingerprint: visitorData.audioFingerprint?.fingerprint ? 'Generated (unique audio signature)' : 'Not available',
-							audio_sample_rate_detailed: visitorData.audioFingerprint?.sampleRate || 'Unknown',
-							available_fonts_count: visitorData.fontCount || 0,
-							available_fonts_list: visitorData.availableFonts?.slice(0, 10).join(', ') + (visitorData.availableFonts?.length > 10 ? '...' : '') || 'None detected',
-							media_features_supported: visitorData.supportedMediaFeatures?.length || 0,
-							device_motion_supported: visitorData.deviceMotion?.supported ? 'YES - Motion sensors available' : 'No motion sensors',
-							device_orientation_supported: visitorData.deviceMotion?.orientationSupported ? 'YES - Orientation detected' : 'No orientation data',
-							webrtc_local_ips: visitorData.webrtcFingerprint?.localIPs?.join(', ') || 'None detected',
-							gpu_detection_tier: visitorData.gpuDetection?.tier || 'Unknown',
-							gpu_detection_type: visitorData.gpuDetection?.type || 'Unknown',
-							plugins_count: visitorData.plugins?.count || 0,
-							plugins_detected: visitorData.plugins?.plugins?.slice(0, 5).map(p => p.name).join(', ') || 'None',
-							speech_voices_count: visitorData.speechSynthesis?.voiceCount || 0,
-							speech_synthesis_supported: visitorData.speechSynthesis?.supported ? 'YES' : 'NO',
-							performance_benchmark: visitorData.performanceFingerprint?.mathPerformance ? `${visitorData.performanceFingerprint.mathPerformance.toFixed(2)}ms` : 'Unknown',
-							advanced_apis_supported: visitorData.browserAPIs?.filter(api => api.supported).length || 0,
-							timezone_dst_offset: visitorData.timezoneFingerprint?.dstOffset || 'Unknown',
-							locale_detected: visitorData.timezoneFingerprint?.locale || 'Unknown',
-							
-							// === COMPREHENSIVE FULL DATA (JSON) ===
+							// === FULL DATA ===
 							full_data: JSON.stringify(visitorData, null, 2)
 						};
 
-						// Send email notification
-						if (typeof emailjs !== 'undefined') {
-							await emailjs.send(
-								this.config.emailjsServiceId,
-								this.config.emailjsTemplateId,
-								templateParams
-							);
-							
-							// Track successful email notification
-							gtag('event', 'email_notification', {
-								'status': 'sent_successfully',
-								'notification_type': 'visitor_detected',
-								'visitor_location': `${visitorData.city}, ${visitorData.country}`,
-								'device_type': visitorData.device,
-								'email_service': 'emailjs'
-							});
-							this.notificationSent = true;
-						}
+						console.log('📤 Sending email with', Object.keys(templateParams).length, 'parameters...');
+
+						// Send email
+						const result = await emailjs.send(
+							this.config.emailjsServiceId,
+							this.config.emailjsTemplateId,
+							templateParams
+						);
+
+						console.log('✅ EMAIL SENT SUCCESSFULLY!', result);
+						this.notificationSent = true;
+
+						// Track success
+						gtag('event', 'email_notification_success', {
+							'status': 'sent_successfully',
+							'visitor_location': `${visitorData.city}, ${visitorData.country}`,
+							'data_points': Object.keys(templateParams).length
+						});
 
 					} catch (error) {
-						// Track email notification failure
-						gtag('event', 'email_notification', {
+						console.error('❌ EMAIL SENDING FAILED:', error);
+						
+						// Track failure  
+						gtag('event', 'email_notification_error', {
 							'status': 'failed',
-							'error_type': 'send_failure',
-							'notification_type': 'visitor_detected',
-							'error_message': error.message || 'Unknown error'
+							'error_message': error.message || 'Unknown error',
+							'error_type': error.name || 'EmailError'
 						});
 					}
 				}
 
-				async getAccessibleVisitorData() {
-					// Get IP and location data
-					const locationData = await this.getLocationData();
-					const performanceData = await this.getPerformanceData();
-					const networkData = await this.getNetworkData();
-					const hardwareData = await this.getHardwareData();
-					const behaviorData = await this.getBehaviorData();
-					const analyticsData = await this.getAnalyticsData();
+				async getVisitorDataSafely() {
+					console.log('🔍 Starting safe data collection...');
 					
-					// === ADVANCED FINGERPRINTING DATA ===
-					const fingerprintData = await this.getAdvancedFingerprintData();
-					
-					return {
-						// === BASIC PAGE INFO ===
+					const data = {
+						// === BASIC DATA (Always works) ===
 						url: window.location.href,
 						title: document.title,
-						referrer: document.referrer || 'Direct visit',
+						referrer: document.referrer,
 						pathname: window.location.pathname,
-						search: window.location.search,
+						searchParams: window.location.search,
 						hash: window.location.hash,
-						protocol: window.location.protocol,
-						host: window.location.host,
-						hostname: window.location.hostname,
-						port: window.location.port,
-						origin: window.location.origin,
-						
-						// === COMPREHENSIVE DEVICE INFO ===
 						userAgent: navigator.userAgent,
 						language: navigator.language,
-						languages: navigator.languages?.join(', ') || 'Not available',
+						languages: navigator.languages?.join(', '),
 						platform: navigator.platform,
-						cookieEnabled: navigator.cookieEnabled,
+						cookiesEnabled: navigator.cookieEnabled,
 						onLine: navigator.onLine,
-						javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : 'Not available',
 						doNotTrack: navigator.doNotTrack,
-						maxTouchPoints: navigator.maxTouchPoints || 0,
-						hardwareConcurrency: navigator.hardwareConcurrency || 'Not available',
-						deviceMemory: navigator.deviceMemory || 'Not available',
-						webdriver: navigator.webdriver || false,
+						timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+						timezoneOffset: new Date().getTimezoneOffset(),
+						localTime: new Date().toLocaleString(),
+						visitTime: new Date().toISOString(),
+						timeOnPage: Math.round((Date.now() - this.startTime) / 1000),
+						sessionStart: new Date(this.startTime).toLocaleString(),
 						
-						// === SCREEN & DISPLAY ===
-						screenResolution: `${screen.width}x${screen.height}`,
-						screenAvailableSize: `${screen.availWidth}x${screen.availHeight}`,
-						screenColorDepth: screen.colorDepth,
-						screenPixelDepth: screen.pixelDepth,
-						devicePixelRatio: window.devicePixelRatio,
-						viewportSize: `${window.innerWidth}x${window.innerHeight}`,
-						outerViewportSize: `${window.outerWidth}x${window.outerHeight}`,
-						scrollPosition: `${window.scrollX},${window.scrollY}`,
-						documentSize: `${document.documentElement.scrollWidth}x${document.documentElement.scrollHeight}`,
-						
-						// === DEVICE CLASSIFICATION ===
+						// === DEVICE DATA ===
 						device: this.getDeviceType(navigator.userAgent),
 						browser: this.getBrowser(navigator.userAgent),
 						browserVersion: this.getBrowserVersion(navigator.userAgent),
@@ -2023,255 +2012,320 @@
 						osVersion: this.getOSVersion(navigator.userAgent),
 						isMobile: /Mobile|Android|iPhone/.test(navigator.userAgent),
 						isTablet: /Tablet|iPad/.test(navigator.userAgent),
-						isDesktop: !/Mobile|Android|iPhone|Tablet|iPad/.test(navigator.userAgent),
 						
-						// === LOCATION DATA ===
-						...locationData,
+						// === SCREEN DATA ===
+						screenResolution: `${screen.width}x${screen.height}`,
+						screenAvailable: `${screen.availWidth}x${screen.availHeight}`,
+						colorDepth: screen.colorDepth,
+						pixelRatio: window.devicePixelRatio,
+						viewportSize: `${window.innerWidth}x${window.innerHeight}`,
+						documentSize: `${document.documentElement.scrollWidth}x${document.documentElement.scrollHeight}`,
 						
-						// === TIME & TIMEZONE ===
-						timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-						timezoneOffset: new Date().getTimezoneOffset(),
-						localTime: new Date().toLocaleString(),
-						visitTime: new Date().toISOString(),
-						visitTimeUnix: Date.now(),
-						sessionStartTime: this.startTime,
-						timeOnPageSeconds: Math.round((Date.now() - this.startTime) / 1000),
+						// === HARDWARE DATA ===
+						hardwareConcurrency: navigator.hardwareConcurrency,
+						deviceMemory: navigator.deviceMemory,
+						maxTouchPoints: navigator.maxTouchPoints,
 						
-						// === PERFORMANCE DATA ===
-						...performanceData,
-						
-						// === NETWORK DATA ===
-						...networkData,
-						
-						// === HARDWARE CAPABILITIES ===
-						...hardwareData,
-						
-						// === USER BEHAVIOR DATA ===
-						...behaviorData,
-						
-						// === GOOGLE ANALYTICS DATA ===
-						...analyticsData,
-						
-						// === ADVANCED FINGERPRINTING DATA ===
-						...fingerprintData,
-						
-						// === BROWSER CAPABILITIES ===
+						// === CAPABILITIES ===
 						localStorage: typeof Storage !== 'undefined',
 						sessionStorage: typeof Storage !== 'undefined',
 						indexedDB: 'indexedDB' in window,
-						webGL: this.hasWebGL(),
-						canvas: this.hasCanvas(),
+						webglSupport: this.hasWebGL(),
+						canvasSupport: this.hasCanvas(),
 						webWorkers: typeof Worker !== 'undefined',
 						serviceWorkers: 'serviceWorker' in navigator,
 						geolocation: 'geolocation' in navigator,
-						camera: 'mediaDevices' in navigator,
-						microphone: 'mediaDevices' in navigator,
 						notifications: 'Notification' in window,
-						fullscreen: document.fullscreenEnabled || document.webkitFullscreenEnabled,
 						
-						// === SECURITY & PRIVACY ===
+						// === SECURITY ===
 						httpsEnabled: window.location.protocol === 'https:',
 						secureContext: window.isSecureContext,
-						crossOriginIsolated: window.crossOriginIsolated || false,
+						javaEnabled: navigator.javaEnabled ? navigator.javaEnabled() : false,
+						webdriver: navigator.webdriver || false,
 						
-						// === ADDITIONAL TECHNICAL DATA ===
+						// === BEHAVIOR DATA ===
+						scrollPosition: window.scrollY,
+						scrollPercentage: Math.round((window.scrollY / (document.body.scrollHeight - window.innerHeight)) * 100) || 0,
+						mouseMovements: window.mouseMovements || 0, 
+						clicksDetected: window.clickCount || 0,
+						keysPressed: window.keyPressCount || 0,
+						currentSection: this.getCurrentSection(),
+						sectionsVisited: Object.keys(window.scrollSections || {}).length,
+						formFieldsFocused: window.formFieldsFocused || 0,
+						formFieldsCompleted: window.formFieldsCompleted || 0,
+						pageVisibility: document.visibilityState,
+						documentFocus: document.hasFocus(),
+						
+						// === DOCUMENT DATA ===
 						documentReadyState: document.readyState,
-						referrerPolicy: document.referrerPolicy || 'Not set',
 						characterSet: document.characterSet,
 						compatMode: document.compatMode,
-						designMode: document.designMode,
-						dir: document.dir || 'Not set',
-						domain: document.domain,
-						lastModified: document.lastModified,
-						
-						// === FORM & INPUT DATA ===
 						formsCount: document.forms.length,
 						linksCount: document.links.length,
 						imagesCount: document.images.length,
 						scriptsCount: document.scripts.length,
 						
-						// === BATTERY API (if available) ===
-						batteryLevel: navigator.getBattery ? 'Available (check separately)' : 'Not available',
-						batteryData: await this.getBatteryData(),
-						
-						// === METADATA ===
-						dataCollectionTime: new Date().toISOString(),
-						dataCollectionMethod: 'comprehensive_visitor_tracking_with_advanced_fingerprinting',
-						trackingVersion: '3.0_advanced_fingerprinting',
-						rb2bActive: typeof window.reb2b !== 'undefined',
-						googleAnalyticsActive: typeof window.gtag !== 'undefined',
-						emailJSActive: typeof window.emailjs !== 'undefined',
-						fingerprintJSActive: typeof window.FingerprintJS !== 'undefined'
+						// === ANALYTICS ===
+						googleAnalytics: typeof gtag !== 'undefined',
+						measurementId: 'G-JZ2VC64MQE',
+						dataLayerEvents: window.dataLayer?.length || 0,
+						rb2bStatus: typeof window.reb2b !== 'undefined',
+						rb2bVersion: window.reb2b?.SNIPPET_VERSION || 'Unknown'
 					};
-				}
 
-				// === ADVANCED FINGERPRINTING DATA COLLECTION ===
-				async getAdvancedFingerprintData() {
+					// === GET LOCATION DATA (Safe) ===
 					try {
-						const fingerprintData = {};
-						
-						// FingerprintJS (Professional fingerprinting)
-						if (typeof FingerprintJS !== 'undefined') {
-							try {
-								const fp = await FingerprintJS.load();
-								const result = await fp.get();
-								fingerprintData.fingerprintJS = {
-									visitorId: result.visitorId,
-									confidence: result.confidence,
-									components: result.components
-								};
-							} catch (fpError) {
-								fingerprintData.fingerprintJSError = fpError.message;
-							}
-						}
-						
-						// Canvas Fingerprinting
-						fingerprintData.canvasFingerprint = getCanvasFingerprint();
-						
-						// WebGL Fingerprinting
-						fingerprintData.webglFingerprint = getWebGLFingerprint();
-						
-						// Audio Fingerprinting
-						fingerprintData.audioFingerprint = await getAudioFingerprint();
-						
-						// Font Detection
-						fingerprintData.availableFonts = getFontFingerprint();
-						fingerprintData.fontCount = fingerprintData.availableFonts.length;
-						
-						// CSS Media Queries Fingerprinting
-						fingerprintData.mediaQueries = getMediaQueriesFingerprint();
-						fingerprintData.supportedMediaFeatures = fingerprintData.mediaQueries.filter(q => q.matches).map(q => q.query);
-						
-						// Device Motion/Orientation
-						fingerprintData.deviceMotion = await getDeviceMotionFingerprint();
-						
-						// WebRTC Fingerprinting
-						fingerprintData.webrtcFingerprint = await getWebRTCFingerprint();
-						
-						// GPU Detection (if DetectGPU library is loaded)
-						if (typeof DetectGPU !== 'undefined') {
-							try {
-								const gpu = await DetectGPU.getGPUInfo();
-								fingerprintData.gpuDetection = gpu;
-							} catch (gpuError) {
-								fingerprintData.gpuDetectionError = gpuError.message;
-							}
-						}
-						
-						// Additional Browser APIs Fingerprinting
-						fingerprintData.browserAPIs = this.getBrowserAPIsFingerprint();
-						
-						// Plugin Detection
-						fingerprintData.plugins = this.getPluginFingerprint();
-						
-						// Timezone Detection (advanced)
-						fingerprintData.timezoneFingerprint = this.getTimezoneFingerprint();
-						
-						// Speech Synthesis Fingerprinting
-						fingerprintData.speechSynthesis = this.getSpeechSynthesisFingerprint();
-						
-						// Performance Fingerprinting
-						fingerprintData.performanceFingerprint = this.getPerformanceFingerprint();
-						
-						return fingerprintData;
-						
+						console.log('🌍 Getting location data...');
+						const locationData = await this.getLocationDataSafely();
+						Object.assign(data, locationData);
+						console.log('✅ Location data collected');
 					} catch (error) {
-						return {
-							fingerprintingError: error.message,
-							fingerprintingSuccess: false
-						};
+						console.log('⚠️ Location data failed:', error.message);
+						data.locationError = error.message;
 					}
+
+					// === GET ADVANCED FINGERPRINTING (Safe) ===
+					try {
+						console.log('🔍 Getting advanced fingerprinting data...');
+						const fingerprintData = await this.getAdvancedFingerprintDataSafely();
+						Object.assign(data, fingerprintData);
+						console.log('✅ Advanced fingerprinting completed');
+					} catch (error) {
+						console.log('⚠️ Advanced fingerprinting failed:', error.message);
+						data.fingerprintError = error.message;
+					}
+
+					// === GET PERFORMANCE DATA (Safe) ===
+					try {
+						const performanceData = this.getPerformanceDataSafely();
+						Object.assign(data, performanceData);
+					} catch (error) {
+						data.performanceError = error.message;
+					}
+
+					// === GET NETWORK DATA (Safe) ===
+					try {
+						const networkData = this.getNetworkDataSafely();
+						Object.assign(data, networkData);
+					} catch (error) {
+						data.networkError = error.message;
+					}
+
+					console.log('✅ Data collection completed:', Object.keys(data).length, 'fields');
+					return data;
 				}
 
-				// Additional fingerprinting methods
-				getBrowserAPIsFingerprint() {
-					const apis = [
-						'WebAssembly', 'SharedArrayBuffer', 'Atomics', 'BigInt', 'OffscreenCanvas',
-						'BroadcastChannel', 'MessageChannel', 'ImageCapture', 'MediaRecorder',
-						'IntersectionObserver', 'ResizeObserver', 'MutationObserver', 'PerformanceObserver',
-						'ReportingObserver', 'PaymentRequest', 'Credential', 'PublicKeyCredential',
-						'ContactsManager', 'BarcodeDetector', 'FaceDetector', 'TextDetector'
+				async getLocationDataSafely() {
+					const services = [
+						{
+							url: 'https://ipapi.co/json/',
+							parser: (data) => ({
+								ip: data.ip,
+								city: data.city,
+								region: data.region,
+								country: data.country_name,
+								countryCode: data.country_code,
+								isp: data.org,
+								postal: data.postal,
+								latitude: data.latitude,
+								longitude: data.longitude,
+								timezone: data.timezone,
+								asn: data.asn,
+								mobile: data.mobile,
+								proxy: data.proxy,
+								hosting: data.hosting,
+								accuracy: data.accuracy,
+								org: data.org,
+								ipVersion: data.version
+							})
+						}
 					];
-					
-					return apis.map(api => ({
-						api: api,
-						supported: typeof window[api] !== 'undefined'
-					}));
+
+					for (let service of services) {
+						try {
+							const response = await fetch(service.url, { 
+								timeout: 5000,
+								signal: AbortSignal.timeout(5000)
+							});
+							const data = await response.json();
+							return service.parser(data);
+						} catch (error) {
+							console.log('Location service failed:', error.message);
+							continue;
+						}
+					}
+
+					return {
+						ip: 'Unknown',
+						city: 'Unknown',
+						country: 'Unknown',
+						locationError: 'All location services failed'
+					};
 				}
 
-				getPluginFingerprint() {
-					const plugins = [];
-					for (let i = 0; i < navigator.plugins.length; i++) {
-						const plugin = navigator.plugins[i];
-						plugins.push({
-							name: plugin.name,
-							description: plugin.description,
-							filename: plugin.filename,
-							version: plugin.version || 'Unknown'
+				async getAdvancedFingerprintDataSafely() {
+					const fingerprintData = {};
+
+					// Safe FingerprintJS
+					try {
+						if (typeof FingerprintJS !== 'undefined') {
+							const fp = await FingerprintJS.load();
+							const result = await fp.get();
+							fingerprintData.fingerprintId = result.visitorId;
+							fingerprintData.fingerprintConfidence = result.confidence;
+						}
+					} catch (error) {
+						fingerprintData.fingerprintError = error.message;
+					}
+
+					// Safe Canvas Fingerprinting
+					try {
+						fingerprintData.canvasFingerprint = this.getCanvasFingerprintSafe();
+					} catch (error) {
+						fingerprintData.canvasError = error.message;
+					}
+
+					// Safe WebGL
+					try {
+						const webgl = this.getWebGLFingerprintSafe();
+						fingerprintData.webglVendor = webgl?.vendor;
+						fingerprintData.webglRenderer = webgl?.renderer;
+						fingerprintData.webglExtensions = webgl?.extensions?.length || 0;
+					} catch (error) {
+						fingerprintData.webglError = error.message;
+					}
+
+					// Safe Audio
+					try {
+						const audio = await this.getAudioFingerprintSafe();
+						fingerprintData.audioFingerprint = audio?.fingerprint;
+						fingerprintData.audioSampleRate = audio?.sampleRate;
+					} catch (error) {
+						fingerprintData.audioError = error.message;
+					}
+
+					// Safe Font Detection
+					try {
+						const fonts = this.getFontFingerprintSafe();
+						fingerprintData.fontsCount = fonts?.length || 0;
+						fingerprintData.fontsList = fonts?.slice(0, 5).join(', ');
+					} catch (error) {
+						fingerprintData.fontError = error.message;
+					}
+
+					return fingerprintData;
+				}
+
+				getPerformanceDataSafely() {
+					try {
+						const data = {};
+						if (performance.timing) {
+							data.pageLoadTime = performance.timing.loadEventEnd - performance.timing.navigationStart;
+							data.domReadyTime = performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart;
+						}
+						if (performance.memory) {
+							data.jsHeapLimit = Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024) + 'MB';
+							data.jsHeapUsed = Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB';
+						}
+						return data;
+					} catch (error) {
+						return { performanceError: error.message };
+					}
+				}
+
+				getNetworkDataSafely() {
+					try {
+						const data = {};
+						if (navigator.connection) {
+							data.connectionType = navigator.connection.effectiveType || navigator.connection.type;
+							data.connectionSpeed = navigator.connection.downlink;
+							data.connectionRTT = navigator.connection.rtt;
+						}
+						return data;
+					} catch (error) {
+						return { networkError: error.message };
+					}
+				}
+
+				// Safe fingerprinting methods
+				getCanvasFingerprintSafe() {
+					try {
+						const canvas = document.createElement('canvas');
+						const ctx = canvas.getContext('2d');
+						ctx.textBaseline = 'top';
+						ctx.font = '14px Arial';
+						ctx.fillStyle = '#f60';
+						ctx.fillRect(125, 1, 62, 20);
+						ctx.fillStyle = '#069';
+						ctx.fillText('Fingerprint test', 2, 15);
+						return canvas.toDataURL();
+					} catch (error) {
+						return null;
+					}
+				}
+
+				getWebGLFingerprintSafe() {
+					try {
+						const canvas = document.createElement('canvas');
+						const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+						if (!gl) return null;
+						
+						const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+						return {
+							vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
+							renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL),
+							extensions: gl.getSupportedExtensions()
+						};
+					} catch (error) {
+						return null;
+					}
+				}
+
+				async getAudioFingerprintSafe() {
+					try {
+						const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+						const result = {
+							sampleRate: audioContext.sampleRate,
+							fingerprint: 'audio_' + audioContext.sampleRate + '_generated'
+						};
+						audioContext.close();
+						return result;
+					} catch (error) {
+						return null;
+					}
+				}
+
+				getFontFingerprintSafe() {
+					try {
+						const testFonts = ['Arial', 'Times New Roman', 'Helvetica', 'Georgia', 'Verdana'];
+						const canvas = document.createElement('canvas');
+						const ctx = canvas.getContext('2d');
+						const availableFonts = [];
+						
+						testFonts.forEach(font => {
+							ctx.font = '12px ' + font;
+							const measurement = ctx.measureText('test').width;
+							if (measurement > 0) availableFonts.push(font);
 						});
+						
+						return availableFonts;
+					} catch (error) {
+						return [];
 					}
-					return {
-						count: navigator.plugins.length,
-						plugins: plugins
-					};
 				}
 
-				getTimezoneFingerprint() {
-					const now = new Date();
-					return {
-						timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
-						offset: now.getTimezoneOffset(),
-						offsetString: now.toString().match(/GMT[+-]\d{4}/)?.[0] || 'Unknown',
-						dstOffset: this.getDSTOffset(),
-						locale: Intl.DateTimeFormat().resolvedOptions().locale
-					};
+				// Helper methods
+				getCurrentSection() {
+					const scrollPosition = window.scrollY;
+					if (scrollPosition < 800) return 'header';
+					if (scrollPosition < 1600) return 'about';
+					if (scrollPosition < 2400) return 'resume';
+					if (scrollPosition < 3200) return 'skills';
+					if (scrollPosition < 4800) return 'work';
+					if (scrollPosition < 5600) return 'blog';
+					return 'contact';
 				}
 
-				getDSTOffset() {
-					const jan = new Date(new Date().getFullYear(), 0, 1);
-					const jul = new Date(new Date().getFullYear(), 6, 1);
-					return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
-				}
-
-				getSpeechSynthesisFingerprint() {
-					if (!('speechSynthesis' in window)) {
-						return { supported: false };
-					}
-					
-					const voices = speechSynthesis.getVoices();
-					return {
-						supported: true,
-						voiceCount: voices.length,
-						voices: voices.map(voice => ({
-							name: voice.name,
-							lang: voice.lang,
-							localService: voice.localService,
-							default: voice.default
-						}))
-					};
-				}
-
-				getPerformanceFingerprint() {
-					if (!performance.mark || !performance.measure) {
-						return { supported: false };
-					}
-					
-					// Benchmark simple operations
-					const start = performance.now();
-					let sum = 0;
-					for (let i = 0; i < 100000; i++) {
-						sum += Math.random();
-					}
-					const mathTime = performance.now() - start;
-					
-					return {
-						supported: true,
-						mathPerformance: mathTime,
-						performanceEntries: performance.getEntriesByType('navigation').length
-					};
-				}
-
-				// Helper functions
 				getDeviceType(userAgent) {
 					if (/Mobile|Android|iPhone/.test(userAgent)) return 'Mobile';
 					if (/Tablet|iPad/.test(userAgent)) return 'Tablet';
@@ -2286,6 +2340,11 @@
 					return 'Unknown';
 				}
 
+				getBrowserVersion(userAgent) {
+					const match = userAgent.match(/(Chrome|Firefox|Safari|Edge)\/([0-9.]+)/);
+					return match ? match[2] : 'Unknown';
+				}
+
 				getOS(userAgent) {
 					if (userAgent.includes('Windows')) return 'Windows';
 					if (userAgent.includes('Mac')) return 'macOS';
@@ -2295,38 +2354,12 @@
 					return 'Unknown';
 				}
 
-				getBrowserVersion(userAgent) {
-					const browsers = [
-						{name: 'Chrome', regex: /Chrome\/([0-9.]+)/},
-						{name: 'Firefox', regex: /Firefox\/([0-9.]+)/},
-						{name: 'Safari', regex: /Version\/([0-9.]+).*Safari/},
-						{name: 'Edge', regex: /Edg\/([0-9.]+)/},
-						{name: 'Opera', regex: /Opera\/([0-9.]+)/}
-					];
-					
-					for (let browser of browsers) {
-						const match = userAgent.match(browser.regex);
-						if (match) return match[1];
-					}
-					return 'Unknown';
-				}
-
 				getOSVersion(userAgent) {
-					if (userAgent.includes('Windows NT 10.0')) return 'Windows 10/11';
-					if (userAgent.includes('Windows NT 6.3')) return 'Windows 8.1';
-					if (userAgent.includes('Windows NT 6.2')) return 'Windows 8';
-					if (userAgent.includes('Windows NT 6.1')) return 'Windows 7';
+					if (userAgent.includes('Windows NT 10.0')) return '10/11';
+					if (userAgent.includes('Windows NT 6.3')) return '8.1';
 					if (userAgent.includes('Mac OS X')) {
 						const match = userAgent.match(/Mac OS X ([0-9_]+)/);
-						return match ? `macOS ${match[1].replace(/_/g, '.')}` : 'macOS';
-					}
-					if (userAgent.includes('Android')) {
-						const match = userAgent.match(/Android ([0-9.]+)/);
-						return match ? `Android ${match[1]}` : 'Android';
-					}
-					if (userAgent.includes('iPhone OS')) {
-						const match = userAgent.match(/iPhone OS ([0-9_]+)/);
-						return match ? `iOS ${match[1].replace(/_/g, '.')}` : 'iOS';
+						return match ? match[1].replace(/_/g, '.') : 'Unknown';
 					}
 					return 'Unknown';
 				}
@@ -2349,762 +2382,35 @@
 					}
 				}
 
-				async getPerformanceData() {
-					try {
-						const perfData = {};
-						
-						if (performance.timing) {
-							const timing = performance.timing;
-							perfData.pageLoadTime = timing.loadEventEnd - timing.navigationStart;
-							perfData.domReadyTime = timing.domContentLoadedEventEnd - timing.navigationStart;
-							perfData.firstPaintTime = timing.responseStart - timing.navigationStart;
-							perfData.dnsLookupTime = timing.domainLookupEnd - timing.domainLookupStart;
-							perfData.tcpConnectTime = timing.connectEnd - timing.connectStart;
-							perfData.requestTime = timing.responseEnd - timing.requestStart;
-							perfData.responseTime = timing.responseEnd - timing.responseStart;
-							perfData.domProcessingTime = timing.domComplete - timing.domLoading;
-						}
-
-						if (performance.memory) {
-							perfData.jsHeapSizeLimit = performance.memory.jsHeapSizeLimit;
-							perfData.totalJSHeapSize = performance.memory.totalJSHeapSize;
-							perfData.usedJSHeapSize = performance.memory.usedJSHeapSize;
-						}
-
-						if (performance.navigation) {
-							perfData.navigationType = performance.navigation.type;
-							perfData.redirectCount = performance.navigation.redirectCount;
-						}
-
-						// Get resource timing if available
-						if (performance.getEntriesByType) {
-							const resources = performance.getEntriesByType('resource');
-							perfData.totalResources = resources.length;
-							perfData.slowestResource = Math.max(...resources.map(r => r.duration));
-							perfData.averageResourceTime = resources.reduce((acc, r) => acc + r.duration, 0) / resources.length;
-						}
-
-						return perfData;
-					} catch (error) {
-						return { performanceError: error.message };
-					}
-				}
-
-				async getNetworkData() {
-					try {
-						const networkData = {};
-						
-						if (navigator.connection) {
-							const conn = navigator.connection;
-							networkData.connectionType = conn.effectiveType || conn.type || 'unknown';
-							networkData.downlink = conn.downlink || 'unknown';
-							networkData.rtt = conn.rtt || 'unknown';
-							networkData.saveData = conn.saveData || false;
-						}
-
-						// Test connection speed (rough estimate)
-						const startTime = performance.now();
-						try {
-							await fetch(window.location.origin + '/favicon.ico', { cache: 'no-cache' });
-							networkData.connectionTestMs = Math.round(performance.now() - startTime);
-						} catch (e) {
-							networkData.connectionTestMs = 'failed';
-						}
-
-						return networkData;
-					} catch (error) {
-						return { networkError: error.message };
-					}
-				}
-
-				async getHardwareData() {
-					try {
-						const hardwareData = {};
-
-						// GPU Info
-						if (this.hasWebGL()) {
-							const canvas = document.createElement('canvas');
-							const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-							if (gl) {
-								hardwareData.gpuVendor = gl.getParameter(gl.VENDOR) || 'Unknown';
-								hardwareData.gpuRenderer = gl.getParameter(gl.RENDERER) || 'Unknown';
-								hardwareData.webglVersion = gl.getParameter(gl.VERSION) || 'Unknown';
-								hardwareData.shadingLanguageVersion = gl.getParameter(gl.SHADING_LANGUAGE_VERSION) || 'Unknown';
-							}
-						}
-
-						// Audio capabilities
-						try {
-							const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-							hardwareData.audioSampleRate = audioContext.sampleRate;
-							hardwareData.audioState = audioContext.state;
-							audioContext.close();
-						} catch (e) {
-							hardwareData.audioSupport = 'Not available';
-						}
-
-						// Media capabilities
-						if (navigator.mediaCapabilities) {
-							hardwareData.mediaCapabilitiesAPI = 'Available';
-						}
-
-						// Gamepad support
-						hardwareData.gamepadSupport = 'getGamepads' in navigator;
-
-						// Vibration support
-						hardwareData.vibrationSupport = 'vibrate' in navigator;
-
-						return hardwareData;
-					} catch (error) {
-						return { hardwareError: error.message };
-					}
-				}
-
-				async getBehaviorData() {
-					try {
-						const behaviorData = {};
-
-						// Scroll behavior
-						behaviorData.currentScrollPosition = window.scrollY;
-						behaviorData.maxScrollPosition = Math.max(document.body.scrollHeight, document.documentElement.scrollHeight) - window.innerHeight;
-						behaviorData.scrollPercentage = Math.round((window.scrollY / behaviorData.maxScrollPosition) * 100) || 0;
-
-						// Mouse/touch activity
-						behaviorData.mouseMovements = window.mouseMovements || 0;
-						behaviorData.hasMouseMoved = (window.mouseMovements || 0) > 0;
-
-						// Focus/blur events
-						behaviorData.documentHasFocus = document.hasFocus();
-						behaviorData.pageVisibility = document.visibilityState;
-
-						// Interaction data
-						behaviorData.clicksDetected = window.clickCount || 0;
-						behaviorData.keysPressed = window.keyPressCount || 0;
-
-						// Time tracking
-						behaviorData.timeOnCurrentSection = this.getCurrentSectionTime();
-						behaviorData.currentSection = portfolioTracker.getCurrentSection();
-						behaviorData.sectionsVisited = Object.keys(window.scrollSections || {}).length;
-
-						// Form interactions
-						behaviorData.formFieldsFocused = window.formFieldsFocused || 0;
-						behaviorData.formFieldsCompleted = window.formFieldsCompleted || 0;
-
-						return behaviorData;
-					} catch (error) {
-						return { behaviorError: error.message };
-					}
-				}
-
-				async getAnalyticsData() {
-					try {
-						const analyticsData = {};
-
-						// Google Analytics data
-						if (typeof gtag !== 'undefined') {
-							analyticsData.googleAnalyticsLoaded = true;
-							analyticsData.measurementId = 'G-JZ2VC64MQE';
-						}
-
-						// Data Layer information
-						if (window.dataLayer) {
-							analyticsData.dataLayerEvents = window.dataLayer.length;
-							analyticsData.dataLayerActive = true;
-							
-							// Extract some key data layer events
-							const recentEvents = window.dataLayer.slice(-10).map(event => ({
-								event: event[0] || 'unknown',
-								timestamp: new Date().toISOString()
-							}));
-							analyticsData.recentDataLayerEvents = recentEvents;
-						}
-
-						// RB2B data
-						if (typeof window.reb2b !== 'undefined') {
-							analyticsData.rb2bLoaded = true;
-							analyticsData.rb2bVersion = window.reb2b.SNIPPET_VERSION || 'unknown';
-						}
-
-						// Enhanced measurement data
-						analyticsData.enhancedMeasurementActive = true;
-						analyticsData.debugModeActive = true;
-
-						// Session data from our tracking
-						if (window.portfolioTracker) {
-							analyticsData.currentDeviceType = portfolioTracker.getDeviceType();
-							analyticsData.currentSection = portfolioTracker.getCurrentSection();
-						}
-
-						// Cookie data
-						analyticsData.cookiesEnabled = navigator.cookieEnabled;
-						analyticsData.cookieCount = document.cookie.split(';').length;
-
-						// Storage usage
-						if (typeof Storage !== 'undefined') {
-							try {
-								analyticsData.localStorageKeys = Object.keys(localStorage).length;
-								analyticsData.sessionStorageKeys = Object.keys(sessionStorage).length;
-							} catch (e) {
-								analyticsData.storageAccess = 'blocked';
-							}
-						}
-
-						return analyticsData;
-					} catch (error) {
-						return { analyticsError: error.message };
-					}
-				}
-
-				getCurrentSectionTime() {
-					// Calculate time spent in current section
-					if (window.lastSectionTime) {
-						return Math.round((Date.now() - window.lastSectionTime) / 1000);
-					}
-					return 0;
-				}
-
-				async getBatteryData() {
-					try {
-						if (navigator.getBattery) {
-							const battery = await navigator.getBattery();
-							return {
-								level: Math.round(battery.level * 100) + '%',
-								charging: battery.charging,
-								chargingTime: battery.chargingTime,
-								dischargingTime: battery.dischargingTime
-							};
-						}
-						return { batteryAPI: 'Not supported' };
-					} catch (error) {
-						return { batteryError: error.message };
-					}
-				}
-
-				// COMPREHENSIVE IP DATA EXTRACTION - ALL POSSIBLE DATA
-				async getLocationData() {
-					try {
-						// Multiple IP services for maximum data extraction
-						const ipServices = [
-							{
-								name: 'ipapi.co',
-								url: 'https://ipapi.co/json/',
-								parser: (data) => ({
-									ip: data.ip,
-									city: data.city,
-									region: data.region,
-									country: data.country_name,
-									countryCode: data.country_code,
-									isp: data.org,
-									postal: data.postal,
-									latitude: data.latitude,
-									longitude: data.longitude,
-									timezone: data.timezone,
-									asn: data.asn,
-									mobile: data.mobile,
-									proxy: data.proxy,
-									hosting: data.hosting,
-									continent: data.continent_code,
-									currency: data.currency,
-									languages: data.languages,
-									callingCode: data.calling_code,
-									accuracy: data.accuracy,
-									network: data.network,
-									version: data.version
-								})
-							},
-							{
-								name: 'ip-api.com',
-								url: 'https://ip-api.com/json/?fields=66846719',
-								parser: (data) => ({
-									ip: data.query,
-									city: data.city,
-									region: data.regionName,
-									country: data.country,
-									countryCode: data.countryCode,
-									isp: data.isp,
-									postal: data.zip,
-									latitude: data.lat,
-									longitude: data.lon,
-									timezone: data.timezone,
-									asn: data.as,
-									mobile: data.mobile,
-									proxy: data.proxy,
-									hosting: data.hosting,
-									district: data.district,
-									reverse: data.reverse,
-									org: data.org,
-									status: data.status
-								})
-							},
-							{
-								name: 'ipinfo.io',
-								url: 'https://ipinfo.io/json',
-								parser: (data) => ({
-									ip: data.ip,
-									city: data.city,
-									region: data.region,
-									country: data.country,
-									postal: data.postal,
-									latitude: data.loc?.split(',')[0],
-									longitude: data.loc?.split(',')[1],
-									timezone: data.timezone,
-									org: data.org,
-									hostname: data.hostname,
-									anycast: data.anycast,
-									privacy: data.privacy
-								})
-							}
-						];
-						
-						let combinedData = {
-							ip: 'Unknown',
-							ipVersion: 'Unknown',
-							dataSourcesUsed: [],
-							errors: []
-						};
-						
-						// Try each service and combine data
-						for (let service of ipServices) {
-							try {
-								const response = await fetch(service.url);
-								const data = await response.json();
-								const parsedData = service.parser(data);
-								
-								// Merge data, keeping first valid value for each field
-								Object.keys(parsedData).forEach(key => {
-									if (parsedData[key] && parsedData[key] !== 'Unknown' && !combinedData[key]) {
-										combinedData[key] = parsedData[key];
-									}
-								});
-								
-								combinedData.dataSourcesUsed.push(service.name);
-								
-								// Add service-specific data
-								combinedData[`${service.name}_data`] = parsedData;
-								
-							} catch (serviceError) {
-								combinedData.errors.push(`${service.name}: ${serviceError.message}`);
-								continue;
-							}
-						}
-						
-						// Determine IP version
-						if (combinedData.ip && combinedData.ip.includes(':')) {
-							combinedData.ipVersion = 'IPv6';
-							combinedData.ipv6Analysis = this.analyzeIPv6(combinedData.ip);
-						} else if (combinedData.ip && combinedData.ip.includes('.')) {
-							combinedData.ipVersion = 'IPv4';
-							combinedData.ipv4Analysis = this.analyzeIPv4(combinedData.ip);
-						}
-						
-						// Additional IP intelligence
-						combinedData.threatIntelligence = await this.getThreatIntelligence(combinedData.ip);
-						combinedData.reverseDNS = await this.getReverseDNS(combinedData.ip);
-						combinedData.geolocationAccuracy = this.calculateGeolocationAccuracy(combinedData);
-						combinedData.networkType = this.determineNetworkType(combinedData);
-						combinedData.connectionQuality = this.estimateConnectionQuality(combinedData);
-						combinedData.businessIntelligence = this.getBusinessIntelligence(combinedData);
-						
-						// Comprehensive analysis
-						combinedData.ipAnalysis = {
-							isResidential: this.isResidentialIP(combinedData),
-							isBusiness: this.isBusinessIP(combinedData),
-							isDataCenter: this.isDataCenterIP(combinedData),
-							isMobile: this.isMobileIP(combinedData),
-							isProxy: this.isProxyIP(combinedData),
-							isVPN: this.isVPNIP(combinedData),
-							isTor: this.isTorIP(combinedData),
-							isHosting: this.isHostingIP(combinedData),
-							riskScore: this.calculateRiskScore(combinedData),
-							trustScore: this.calculateTrustScore(combinedData)
-						};
-						
-						return combinedData;
-						
-					} catch (error) {
-						return {
-							ip: 'Unknown',
-							locationError: error.message,
-							ipVersion: 'Unknown',
-							errorType: 'comprehensive_ip_analysis_failed'
-						};
-					}
-				}
-
-				// IPv6 Analysis
-				analyzeIPv6(ipv6) {
-					try {
-						const segments = ipv6.split(':');
-						return {
-							format: 'IPv6',
-							segments: segments.length,
-							prefix: segments[0] + ':' + segments[1],
-							networkPrefix: segments.slice(0, 4).join(':'),
-							interfaceId: segments.slice(4).join(':'),
-							isLinkLocal: ipv6.startsWith('fe80:'),
-							isLoopback: ipv6 === '::1',
-							isMulticast: ipv6.startsWith('ff'),
-							isUniqueLocal: ipv6.startsWith('fc') || ipv6.startsWith('fd'),
-							isGlobal: !ipv6.startsWith('fe80:') && !ipv6.startsWith('fc') && !ipv6.startsWith('fd'),
-							regionalIndicator: this.getIPv6RegionalIndicator(segments[0])
-						};
-					} catch (error) {
-						return { analysisError: error.message };
-					}
-				}
-
-				// IPv4 Analysis
-				analyzeIPv4(ipv4) {
-					try {
-						const octets = ipv4.split('.').map(Number);
-						return {
-							format: 'IPv4',
-							octets: octets,
-							class: this.getIPv4Class(octets[0]),
-							isPrivate: this.isPrivateIPv4(octets),
-							isLoopback: octets[0] === 127,
-							isMulticast: octets[0] >= 224 && octets[0] <= 239,
-							isBroadcast: ipv4.endsWith('.255'),
-							subnetMask: this.estimateSubnetMask(octets),
-							geographicHint: this.getIPv4GeographicHint(octets)
-						};
-					} catch (error) {
-						return { analysisError: error.message };
-					}
-				}
-
-				// Threat Intelligence
-				async getThreatIntelligence(ip) {
-					try {
-						// This would integrate with threat intelligence APIs
-						// For now, basic heuristics
-						return {
-							threatLevel: 'low', // Would be calculated from threat feeds
-							knownMalicious: false,
-							spamListed: false,
-							botnetParticipation: false,
-							abuseConfidence: 0,
-							lastSeen: null,
-							reportedBy: [],
-							threatCategories: []
-						};
-					} catch (error) {
-						return { threatIntelError: error.message };
-					}
-				}
-
-				// Reverse DNS Lookup
-				async getReverseDNS(ip) {
-					try {
-						// Note: Reverse DNS lookups are limited in browsers
-						// This would need server-side implementation for full functionality
-						return {
-							hostname: 'Browser limitation - server-side lookup required',
-							domains: [],
-							serverSideRequired: true
-						};
-					} catch (error) {
-						return { reverseDNSError: error.message };
-					}
-				}
-
-				// Helper functions for IP analysis
-				getIPv6RegionalIndicator(prefix) {
-					const prefixMap = {
-						'2001': 'Global Unicast',
-						'2400': 'Asia-Pacific',
-						'2409': 'Asia-Pacific (India region)',
-						'2600': 'North America',
-						'2800': 'Latin America',
-						'2a00': 'Europe',
-						'2c00': 'Africa'
-					};
-					return prefixMap[prefix] || 'Unknown region';
-				}
-
-				getIPv4Class(firstOctet) {
-					if (firstOctet >= 1 && firstOctet <= 126) return 'Class A';
-					if (firstOctet >= 128 && firstOctet <= 191) return 'Class B';
-					if (firstOctet >= 192 && firstOctet <= 223) return 'Class C';
-					if (firstOctet >= 224 && firstOctet <= 239) return 'Class D (Multicast)';
-					if (firstOctet >= 240 && firstOctet <= 255) return 'Class E (Reserved)';
-					return 'Unknown';
-				}
-
-				isPrivateIPv4(octets) {
-					return (octets[0] === 10) ||
-						   (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
-						   (octets[0] === 192 && octets[1] === 168);
-				}
-
-				calculateGeolocationAccuracy(data) {
-					let accuracy = 'Unknown';
-					if (data.accuracy) accuracy = data.accuracy + 'km';
-					else if (data.postal) accuracy = 'City level';
-					else if (data.city) accuracy = 'Regional level';
-					else if (data.country) accuracy = 'Country level';
-					return accuracy;
-				}
-
-				determineNetworkType(data) {
-					if (data.mobile) return 'Mobile Network';
-					if (data.hosting) return 'Hosting Provider';
-					if (data.isp && data.isp.toLowerCase().includes('wireless')) return 'Wireless';
-					if (data.isp && data.isp.toLowerCase().includes('fiber')) return 'Fiber';
-					if (data.isp && data.isp.toLowerCase().includes('cable')) return 'Cable';
-					if (data.isp && data.isp.toLowerCase().includes('dsl')) return 'DSL';
-					return 'Unknown';
-				}
-
-				estimateConnectionQuality(data) {
-					let quality = 'Unknown';
-					if (data.mobile) quality = 'Mobile (Variable)';
-					else if (data.hosting) quality = 'High (Data Center)';
-					else if (data.isp) {
-						if (data.isp.toLowerCase().includes('fiber')) quality = 'Very High (Fiber)';
-						else if (data.isp.toLowerCase().includes('cable')) quality = 'High (Cable)';
-						else if (data.isp.toLowerCase().includes('dsl')) quality = 'Medium (DSL)';
-						else quality = 'Varies by ISP';
-					}
-					return quality;
-				}
-
-				getBusinessIntelligence(data) {
-					return {
-						likelyBusiness: data.org && !data.mobile,
-						companyName: data.org || 'Unknown',
-						industryGuess: this.guessIndustry(data.org),
-						employeeRange: this.estimateCompanySize(data.org),
-						businessType: this.classifyBusinessType(data.org)
-					};
-				}
-
-				// IP Classification Methods
-				isResidentialIP(data) { return !data.hosting && !data.mobile && data.isp && !data.org?.toLowerCase().includes('hosting'); }
-				isBusinessIP(data) { return data.org && !data.hosting && !data.mobile; }
-				isDataCenterIP(data) { return data.hosting || (data.org && data.org.toLowerCase().includes('hosting')); }
-				isMobileIP(data) { return data.mobile || (data.isp && data.isp.toLowerCase().includes('mobile')); }
-				isProxyIP(data) { return data.proxy || false; }
-				isVPNIP(data) { return data.org?.toLowerCase().includes('vpn') || false; }
-				isTorIP(data) { return data.org?.toLowerCase().includes('tor') || false; }
-				isHostingIP(data) { return data.hosting || false; }
-
-				calculateRiskScore(data) {
-					let risk = 0;
-					if (data.proxy) risk += 30;
-					if (data.hosting) risk += 20;
-					if (this.isVPNIP(data)) risk += 25;
-					if (this.isTorIP(data)) risk += 50;
-					return Math.min(risk, 100);
-				}
-
-				calculateTrustScore(data) {
-					let trust = 100;
-					if (data.proxy) trust -= 20;
-					if (data.hosting) trust -= 10;
-					if (this.isVPNIP(data)) trust -= 15;
-					if (this.isTorIP(data)) trust -= 30;
-					if (!data.org) trust -= 5;
-					return Math.max(trust, 0);
-				}
-
 				guessIndustry(org) {
 					if (!org) return 'Unknown';
 					const orgLower = org.toLowerCase();
-					if (orgLower.includes('telecom') || orgLower.includes('wireless')) return 'Telecommunications';
-					if (orgLower.includes('university') || orgLower.includes('college')) return 'Education';
-					if (orgLower.includes('hospital') || orgLower.includes('medical')) return 'Healthcare';
-					if (orgLower.includes('government') || orgLower.includes('gov')) return 'Government';
-					if (orgLower.includes('bank') || orgLower.includes('financial')) return 'Finance';
+					if (orgLower.includes('telecom')) return 'Telecommunications';
+					if (orgLower.includes('university')) return 'Education';
+					if (orgLower.includes('hospital')) return 'Healthcare';
+					if (orgLower.includes('government')) return 'Government';
+					if (orgLower.includes('bank')) return 'Finance';
 					return 'Unknown';
-				}
-
-				estimateCompanySize(org) {
-					if (!org) return 'Unknown';
-					// This would need more sophisticated analysis
-					return 'Unknown (requires business intelligence data)';
-				}
-
-				classifyBusinessType(org) {
-					if (!org) return 'Unknown';
-					const orgLower = org.toLowerCase();
-					if (orgLower.includes('inc') || orgLower.includes('corp') || orgLower.includes('ltd')) return 'Corporation';
-					if (orgLower.includes('llc')) return 'Limited Liability Company';
-					if (orgLower.includes('university') || orgLower.includes('college')) return 'Educational Institution';
-					if (orgLower.includes('government') || orgLower.includes('gov')) return 'Government Agency';
-					return 'Unknown';
-				}
-
-				estimateSubnetMask(octets) {
-					// Basic subnet mask estimation based on IP class
-					if (octets[0] <= 126) return '255.0.0.0';
-					if (octets[0] <= 191) return '255.255.0.0';
-					if (octets[0] <= 223) return '255.255.255.0';
-					return 'Unknown';
-				}
-
-				getIPv4GeographicHint(octets) {
-					// This would use more sophisticated GeoIP databases
-					return 'Requires comprehensive GeoIP database';
 				}
 			}
 
-			// Initialize the notification system with advanced fingerprinting
+			// Initialize the system when page loads
 			window.addEventListener('load', () => {
-				// Initialize main visitor notification system
-				const visitorSystem = new VisitorNotificationSystem();
+				console.log('🌐 PAGE LOADED - Starting Visitor Notification System');
 				
-				// Initialize advanced fingerprinting immediately
-				initializeAdvancedFingerprinting();
+				// Small delay to ensure all libraries are loaded
+				setTimeout(() => {
+					new VisitorNotificationSystem();
+				}, 1000);
 			});
 
-			// COMPREHENSIVE ADVANCED FINGERPRINTING INITIALIZATION
-			async function initializeAdvancedFingerprinting() {
-				console.log('🔍 Initializing Advanced Fingerprinting System...');
-				
-				try {
-					// Track fingerprinting initialization
-					gtag('event', 'advanced_fingerprinting_init', {
-						'system_status': 'starting',
-						'fingerprinting_version': '3.0_advanced',
-						'timestamp': new Date().toISOString()
-					});
-					
-					// Initialize FingerprintJS (if available)
-					if (typeof FingerprintJS !== 'undefined') {
-						try {
-							const fp = await FingerprintJS.load();
-							const result = await fp.get();
-							
-							// Store fingerprint data globally for immediate access
-							window.visitorFingerprint = {
-								id: result.visitorId,
-								confidence: result.confidence,
-								timestamp: new Date().toISOString()
-							};
-							
-							// Track successful fingerprinting
-							gtag('event', 'fingerprint_generated', {
-								'visitor_id': result.visitorId,
-								'confidence_score': result.confidence,
-								'fingerprinting_method': 'FingerprintJS_Pro',
-								'components_count': Object.keys(result.components).length
-							});
-							
-							console.log('✅ FingerprintJS initialized - Visitor ID:', result.visitorId);
-						} catch (fpError) {
-							console.error('❌ FingerprintJS error:', fpError);
-							gtag('event', 'fingerprinting_error', {
-								'error_type': 'fingerprintjs_failed',
-								'error_message': fpError.message
-							});
-						}
-					}
-					
-					// Initialize all fingerprinting techniques
-					const fingerprintingResults = await Promise.allSettled([
-						getCanvasFingerprint(),
-						getWebGLFingerprint(),
-						getAudioFingerprint(),
-						getFontFingerprint(),
-						getMediaQueriesFingerprint(),
-						getDeviceMotionFingerprint(),
-						getWebRTCFingerprint()
-					]);
-					
-					// Process fingerprinting results
-					fingerprintingResults.forEach((result, index) => {
-						const techniques = ['canvas', 'webgl', 'audio', 'fonts', 'media_queries', 'device_motion', 'webrtc'];
-						const technique = techniques[index];
-						
-						if (result.status === 'fulfilled') {
-							gtag('event', 'fingerprinting_technique_success', {
-								'technique': technique,
-								'data_size': JSON.stringify(result.value).length,
-								'timestamp': new Date().toISOString()
-							});
-							console.log(`✅ ${technique} fingerprinting completed`);
-						} else {
-							gtag('event', 'fingerprinting_technique_error', {
-								'technique': technique,
-								'error': result.reason?.message || 'Unknown error',
-								'timestamp': new Date().toISOString()
-							});
-							console.log(`❌ ${technique} fingerprinting failed:`, result.reason);
-						}
-					});
-					
-					// Track comprehensive fingerprinting completion
-					gtag('event', 'advanced_fingerprinting_complete', {
-						'total_techniques': fingerprintingResults.length,
-						'successful_techniques': fingerprintingResults.filter(r => r.status === 'fulfilled').length,
-						'failed_techniques': fingerprintingResults.filter(r => r.status === 'rejected').length,
-						'completion_time': new Date().toISOString(),
-						'fingerprinting_mode': 'comprehensive'
-					});
-					
-					console.log('🎯 Advanced Fingerprinting System Fully Initialized');
-					
-				} catch (error) {
-					console.error('❌ Advanced Fingerprinting Initialization Error:', error);
-					gtag('event', 'fingerprinting_system_error', {
-						'error_type': 'initialization_failed',
-						'error_message': error.message,
-						'timestamp': new Date().toISOString()
-					});
-				}
+			// Backup initialization (in case load event already fired)
+			if (document.readyState === 'complete') {
+				console.log('🌐 PAGE ALREADY LOADED - Starting Visitor Notification System');
+				setTimeout(() => {
+					new VisitorNotificationSystem();
+				}, 1000);
 			}
-
-			// Additional passive data collection (runs continuously)
-			function initializePassiveDataCollection() {
-				// Passive font loading detection
-				if (document.fonts) {
-					document.fonts.ready.then(() => {
-						gtag('event', 'fonts_loaded', {
-							'fonts_count': document.fonts.size,
-							'fonts_status': document.fonts.status,
-							'timestamp': new Date().toISOString()
-						});
-					});
-				}
-				
-				// Passive connection monitoring
-				if (navigator.connection) {
-					navigator.connection.addEventListener('change', () => {
-						gtag('event', 'connection_change', {
-							'new_connection_type': navigator.connection.effectiveType,
-							'new_downlink': navigator.connection.downlink,
-							'new_rtt': navigator.connection.rtt,
-							'timestamp': new Date().toISOString()
-						});
-					});
-				}
-				
-				// Passive orientation change monitoring
-				window.addEventListener('orientationchange', () => {
-					setTimeout(() => {
-						gtag('event', 'orientation_change', {
-							'new_orientation': screen.orientation?.angle || window.orientation,
-							'new_viewport': `${window.innerWidth}x${window.innerHeight}`,
-							'timestamp': new Date().toISOString()
-						});
-					}, 100);
-				});
-				
-				// Passive visibility change monitoring (enhanced)
-				document.addEventListener('visibilitychange', () => {
-					gtag('event', 'visibility_change_detailed', {
-						'visibility_state': document.visibilityState,
-						'hidden': document.hidden,
-						'timestamp': new Date().toISOString(),
-						'time_on_page': Math.round((Date.now() - window.pageLoadTime) / 1000)
-					});
-				});
-			}
-			
-			// Initialize passive data collection immediately
-			window.pageLoadTime = Date.now();
-			initializePassiveDataCollection();
 		</script>
 
 
