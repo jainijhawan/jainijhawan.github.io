@@ -361,6 +361,270 @@
 
 	<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9467837616512667"
 		crossorigin="anonymous"></script>
+
+	<!-- FingerprintJS - Advanced Browser Fingerprinting -->
+	<script src="https://cdn.jsdelivr.net/npm/@fingerprintjs/fingerprintjs@4/dist/fp.min.js"></script>
+	
+	<!-- Additional Fingerprinting Libraries -->
+	<script src="https://cdn.jsdelivr.net/npm/detect-gpu@5.0.38/dist/detect-gpu.umd.js"></script>
+	
+	<!-- Canvas Fingerprinting Library -->
+	<script>
+		// Advanced Canvas Fingerprinting
+		function getCanvasFingerprint() {
+			const canvas = document.createElement('canvas');
+			const ctx = canvas.getContext('2d');
+			canvas.width = 280;
+			canvas.height = 60;
+			
+			// Create complex canvas fingerprint
+			ctx.textBaseline = 'top';
+			ctx.font = '14px Arial';
+			ctx.fillStyle = '#f60';
+			ctx.fillRect(125, 1, 62, 20);
+			ctx.fillStyle = '#069';
+			ctx.fillText('Advanced fingerprinting 🔍', 2, 15);
+			ctx.fillStyle = 'rgba(102, 204, 0, 0.7)';
+			ctx.fillText('Canvas fingerprint data', 4, 45);
+			
+			// Add more complexity
+			ctx.globalCompositeOperation = 'multiply';
+			ctx.fillStyle = 'rgb(255,0,255)';
+			ctx.beginPath();
+			ctx.arc(50, 50, 50, 0, Math.PI * 2, true);
+			ctx.closePath();
+			ctx.fill();
+			
+			return canvas.toDataURL();
+		}
+		
+		// WebGL Fingerprinting
+		function getWebGLFingerprint() {
+			const canvas = document.createElement('canvas');
+			const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
+			if (!gl) return null;
+			
+			const debugInfo = gl.getExtension('WEBGL_debug_renderer_info');
+			return {
+				vendor: gl.getParameter(debugInfo.UNMASKED_VENDOR_WEBGL),
+				renderer: gl.getParameter(debugInfo.UNMASKED_RENDERER_WEBGL),
+				version: gl.getParameter(gl.VERSION),
+				shadingLanguage: gl.getParameter(gl.SHADING_LANGUAGE_VERSION),
+				extensions: gl.getSupportedExtensions(),
+				maxTextureSize: gl.getParameter(gl.MAX_TEXTURE_SIZE),
+				maxViewportDims: gl.getParameter(gl.MAX_VIEWPORT_DIMS),
+				aliasedLineWidthRange: gl.getParameter(gl.ALIASED_LINE_WIDTH_RANGE),
+				aliasedPointSizeRange: gl.getParameter(gl.ALIASED_POINT_SIZE_RANGE),
+				maxAnisotropy: gl.getExtension('EXT_texture_filter_anisotropic') ? 
+					gl.getParameter(gl.getExtension('EXT_texture_filter_anisotropic').MAX_TEXTURE_MAX_ANISOTROPY_EXT) : null
+			};
+		}
+		
+		// Audio Context Fingerprinting
+		function getAudioFingerprint() {
+			return new Promise((resolve) => {
+				try {
+					const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+					const oscillator = audioContext.createOscillator();
+					const analyser = audioContext.createAnalyser();
+					const gainNode = audioContext.createGain();
+					const scriptProcessor = audioContext.createScriptProcessor(4096, 1, 1);
+					
+					oscillator.type = 'triangle';
+					oscillator.frequency.setValueAtTime(10000, audioContext.currentTime);
+					
+					gainNode.gain.setValueAtTime(0, audioContext.currentTime);
+					
+					oscillator.connect(analyser);
+					analyser.connect(scriptProcessor);
+					scriptProcessor.connect(gainNode);
+					gainNode.connect(audioContext.destination);
+					
+					scriptProcessor.onaudioprocess = function(bins) {
+						const data = bins.inputBuffer.getChannelData(0);
+						let fingerprint = 0;
+						for (let i = 0; i < data.length; i++) {
+							fingerprint += Math.abs(data[i]);
+						}
+						
+						audioContext.close();
+						resolve({
+							fingerprint: fingerprint.toString(),
+							sampleRate: audioContext.sampleRate,
+							maxChannelCount: audioContext.destination.maxChannelCount,
+							numberOfInputs: audioContext.destination.numberOfInputs,
+							numberOfOutputs: audioContext.destination.numberOfOutputs,
+							channelCount: audioContext.destination.channelCount
+						});
+					};
+					
+					oscillator.start(0);
+				} catch (error) {
+					resolve({ error: error.message });
+				}
+			});
+		}
+		
+		// Font Detection Fingerprinting
+		function getFontFingerprint() {
+			const baseFonts = ['monospace', 'sans-serif', 'serif'];
+			const testFonts = [
+				'Arial', 'Arial Black', 'Arial Narrow', 'Arial Rounded MT Bold',
+				'Calibri', 'Cambria', 'Comic Sans MS', 'Consolas', 'Courier',
+				'Courier New', 'Georgia', 'Helvetica', 'Impact', 'Lucida Console',
+				'Lucida Sans Unicode', 'Microsoft Sans Serif', 'Palatino Linotype',
+				'Tahoma', 'Times', 'Times New Roman', 'Trebuchet MS', 'Verdana',
+				'Wingdings', 'Wingdings 2', 'Wingdings 3'
+			];
+			
+			const testString = 'mmmmmmmmmmlli';
+			const testSize = '72px';
+			const canvas = document.createElement('canvas');
+			const ctx = canvas.getContext('2d');
+			
+			const baseFontMeasurements = {};
+			baseFonts.forEach(baseFont => {
+				ctx.font = testSize + ' ' + baseFont;
+				baseFontMeasurements[baseFont] = ctx.measureText(testString).width;
+			});
+			
+			const availableFonts = [];
+			testFonts.forEach(testFont => {
+				baseFonts.forEach(baseFont => {
+					ctx.font = testSize + ' ' + testFont + ',' + baseFont;
+					const measurement = ctx.measureText(testString).width;
+					if (measurement !== baseFontMeasurements[baseFont]) {
+						if (!availableFonts.includes(testFont)) {
+							availableFonts.push(testFont);
+						}
+					}
+				});
+			});
+			
+			return availableFonts;
+		}
+		
+		// CSS Media Queries Fingerprinting
+		function getMediaQueriesFingerprint() {
+			const queries = [
+				'(color)',
+				'(color-index)',
+				'(monochrome)',
+				'(color-gamut: srgb)',
+				'(color-gamut: p3)',
+				'(color-gamut: rec2020)',
+				'(dynamic-range: standard)',
+				'(dynamic-range: high)',
+				'(inverted-colors: inverted)',
+				'(inverted-colors: none)',
+				'(pointer: coarse)',
+				'(pointer: fine)',
+				'(hover: hover)',
+				'(hover: none)',
+				'(any-hover: hover)',
+				'(any-hover: none)',
+				'(any-pointer: coarse)',
+				'(any-pointer: fine)',
+				'(prefers-color-scheme: dark)',
+				'(prefers-color-scheme: light)',
+				'(prefers-reduced-motion: reduce)',
+				'(prefers-reduced-motion: no-preference)',
+				'(prefers-reduced-transparency: reduce)',
+				'(prefers-reduced-transparency: no-preference)'
+			];
+			
+			return queries.map(query => ({
+				query: query,
+				matches: window.matchMedia(query).matches
+			}));
+		}
+		
+		// Device Motion/Orientation Fingerprinting (when available)
+		function getDeviceMotionFingerprint() {
+			return new Promise((resolve) => {
+				if (!window.DeviceMotionEvent && !window.DeviceOrientationEvent) {
+					resolve({ supported: false });
+					return;
+				}
+				
+				let motionData = [];
+				let orientationData = [];
+				
+				const motionHandler = (event) => {
+					motionData.push({
+						acceleration: event.acceleration,
+						accelerationIncludingGravity: event.accelerationIncludingGravity,
+						rotationRate: event.rotationRate,
+						interval: event.interval
+					});
+				};
+				
+				const orientationHandler = (event) => {
+					orientationData.push({
+						alpha: event.alpha,
+						beta: event.beta,
+						gamma: event.gamma,
+						absolute: event.absolute
+					});
+				};
+				
+				window.addEventListener('devicemotion', motionHandler);
+				window.addEventListener('deviceorientation', orientationHandler);
+				
+				setTimeout(() => {
+					window.removeEventListener('devicemotion', motionHandler);
+					window.removeEventListener('deviceorientation', orientationHandler);
+					
+					resolve({
+						supported: true,
+						motionData: motionData.slice(0, 5), // First 5 readings
+						orientationData: orientationData.slice(0, 5),
+						motionSupported: motionData.length > 0,
+						orientationSupported: orientationData.length > 0
+					});
+				}, 1000);
+			});
+		}
+		
+		// WebRTC Fingerprinting (Local IP detection)
+		function getWebRTCFingerprint() {
+			return new Promise((resolve) => {
+				const RTCPeerConnection = window.RTCPeerConnection || window.mozRTCPeerConnection || window.webkitRTCPeerConnection;
+				if (!RTCPeerConnection) {
+					resolve({ supported: false });
+					return;
+				}
+				
+				const pc = new RTCPeerConnection({
+					iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+				});
+				
+				const ips = [];
+				
+				pc.onicecandidate = (event) => {
+					if (event.candidate) {
+						const candidate = event.candidate.candidate;
+						const ipMatch = candidate.match(/(?:[0-9]{1,3}\.){3}[0-9]{1,3}/);
+						if (ipMatch && !ips.includes(ipMatch[0])) {
+							ips.push(ipMatch[0]);
+						}
+					}
+				};
+				
+				pc.createDataChannel('');
+				pc.createOffer().then(offer => pc.setLocalDescription(offer));
+				
+				setTimeout(() => {
+					pc.close();
+					resolve({
+						supported: true,
+						localIPs: ips,
+						candidateTypes: []
+					});
+				}, 2000);
+			});
+		}
+	</script>
 </head>
 
 <body>
@@ -1493,6 +1757,43 @@
 							visitor_hosting: visitorData.hosting ? 'YES - Hosting/VPN Detected' : 'No hosting detected',
 							visitor_mobile_carrier: visitorData.mobile ? 'Mobile connection' : 'Fixed broadband',
 							
+							// === COMPREHENSIVE IP ANALYSIS ===
+							ip_version: visitorData.ipVersion || 'Unknown',
+							ip_regional_indicator: visitorData.ipv6Analysis?.regionalIndicator || visitorData.ipv4Analysis?.geographicHint || 'Unknown',
+							ip_network_prefix: visitorData.ipv6Analysis?.networkPrefix || 'N/A',
+							ip_class: visitorData.ipv4Analysis?.class || 'N/A',
+							ip_is_private: visitorData.ipv4Analysis?.isPrivate ? 'YES' : 'NO',
+							geolocation_accuracy: visitorData.geolocationAccuracy || 'Unknown',
+							network_type_detailed: visitorData.networkType || 'Unknown',
+							connection_quality_estimate: visitorData.connectionQuality || 'Unknown',
+							
+							// === IP CLASSIFICATION & ANALYSIS ===
+							ip_is_residential: visitorData.ipAnalysis?.isResidential ? 'YES' : 'NO',
+							ip_is_business: visitorData.ipAnalysis?.isBusiness ? 'YES' : 'NO',
+							ip_is_datacenter: visitorData.ipAnalysis?.isDataCenter ? 'YES' : 'NO',
+							ip_is_mobile_network: visitorData.ipAnalysis?.isMobile ? 'YES' : 'NO',
+							ip_is_proxy_detected: visitorData.ipAnalysis?.isProxy ? 'YES - PROXY DETECTED' : 'No proxy',
+							ip_is_vpn_detected: visitorData.ipAnalysis?.isVPN ? 'YES - VPN DETECTED' : 'No VPN',
+							ip_is_tor_detected: visitorData.ipAnalysis?.isTor ? 'YES - TOR DETECTED' : 'No Tor',
+							ip_risk_score: `${visitorData.ipAnalysis?.riskScore || 0}/100`,
+							ip_trust_score: `${visitorData.ipAnalysis?.trustScore || 100}/100`,
+							
+							// === BUSINESS INTELLIGENCE ===
+							likely_business_visitor: visitorData.businessIntelligence?.likelyBusiness ? 'YES - Business visitor likely' : 'Personal/Consumer visitor',
+							company_name_detected: visitorData.businessIntelligence?.companyName || 'Unknown',
+							industry_guess: visitorData.businessIntelligence?.industryGuess || 'Unknown',
+							business_type: visitorData.businessIntelligence?.businessType || 'Unknown',
+							
+							// === THREAT INTELLIGENCE ===
+							threat_level: visitorData.threatIntelligence?.threatLevel || 'Unknown',
+							known_malicious: visitorData.threatIntelligence?.knownMalicious ? 'YES - MALICIOUS IP' : 'Clean',
+							spam_listed: visitorData.threatIntelligence?.spamListed ? 'YES - SPAM LISTED' : 'Not spam listed',
+							abuse_confidence: visitorData.threatIntelligence?.abuseConfidence || '0%',
+							
+							// === DATA SOURCES ===
+							ip_data_sources: visitorData.dataSourcesUsed?.join(', ') || 'Unknown',
+							ip_analysis_errors: visitorData.errors?.length > 0 ? visitorData.errors.join('; ') : 'None',
+							
 							// === DEVICE & BROWSER DETAILS ===
 							visitor_device: `${visitorData.device} (${visitorData.isMobile ? 'Mobile' : visitorData.isTablet ? 'Tablet' : 'Desktop'})`,
 							visitor_browser: `${visitorData.browser} ${visitorData.browserVersion}`,
@@ -1603,6 +1904,32 @@
 							tracking_version: visitorData.trackingVersion,
 							data_collection_time: visitorData.dataCollectionTime,
 							
+							// === ADVANCED FINGERPRINTING DATA ===
+							fingerprint_visitor_id: visitorData.fingerprintJS?.visitorId || 'Not available',
+							fingerprint_confidence: visitorData.fingerprintJS?.confidence || 'Unknown',
+							canvas_fingerprint: visitorData.canvasFingerprint ? 'Generated (see full data)' : 'Not available',
+							webgl_vendor: visitorData.webglFingerprint?.vendor || 'Unknown',
+							webgl_renderer: visitorData.webglFingerprint?.renderer || 'Unknown',
+							webgl_extensions_count: visitorData.webglFingerprint?.extensions?.length || 0,
+							audio_fingerprint: visitorData.audioFingerprint?.fingerprint ? 'Generated (unique audio signature)' : 'Not available',
+							audio_sample_rate_detailed: visitorData.audioFingerprint?.sampleRate || 'Unknown',
+							available_fonts_count: visitorData.fontCount || 0,
+							available_fonts_list: visitorData.availableFonts?.slice(0, 10).join(', ') + (visitorData.availableFonts?.length > 10 ? '...' : '') || 'None detected',
+							media_features_supported: visitorData.supportedMediaFeatures?.length || 0,
+							device_motion_supported: visitorData.deviceMotion?.supported ? 'YES - Motion sensors available' : 'No motion sensors',
+							device_orientation_supported: visitorData.deviceMotion?.orientationSupported ? 'YES - Orientation detected' : 'No orientation data',
+							webrtc_local_ips: visitorData.webrtcFingerprint?.localIPs?.join(', ') || 'None detected',
+							gpu_detection_tier: visitorData.gpuDetection?.tier || 'Unknown',
+							gpu_detection_type: visitorData.gpuDetection?.type || 'Unknown',
+							plugins_count: visitorData.plugins?.count || 0,
+							plugins_detected: visitorData.plugins?.plugins?.slice(0, 5).map(p => p.name).join(', ') || 'None',
+							speech_voices_count: visitorData.speechSynthesis?.voiceCount || 0,
+							speech_synthesis_supported: visitorData.speechSynthesis?.supported ? 'YES' : 'NO',
+							performance_benchmark: visitorData.performanceFingerprint?.mathPerformance ? `${visitorData.performanceFingerprint.mathPerformance.toFixed(2)}ms` : 'Unknown',
+							advanced_apis_supported: visitorData.browserAPIs?.filter(api => api.supported).length || 0,
+							timezone_dst_offset: visitorData.timezoneFingerprint?.dstOffset || 'Unknown',
+							locale_detected: visitorData.timezoneFingerprint?.locale || 'Unknown',
+							
 							// === COMPREHENSIVE FULL DATA (JSON) ===
 							full_data: JSON.stringify(visitorData, null, 2)
 						};
@@ -1645,6 +1972,9 @@
 					const hardwareData = await this.getHardwareData();
 					const behaviorData = await this.getBehaviorData();
 					const analyticsData = await this.getAnalyticsData();
+					
+					// === ADVANCED FINGERPRINTING DATA ===
+					const fingerprintData = await this.getAdvancedFingerprintData();
 					
 					return {
 						// === BASIC PAGE INFO ===
@@ -1722,6 +2052,9 @@
 						// === GOOGLE ANALYTICS DATA ===
 						...analyticsData,
 						
+						// === ADVANCED FINGERPRINTING DATA ===
+						...fingerprintData,
+						
 						// === BROWSER CAPABILITIES ===
 						localStorage: typeof Storage !== 'undefined',
 						sessionStorage: typeof Storage !== 'undefined',
@@ -1763,15 +2096,180 @@
 						
 						// === METADATA ===
 						dataCollectionTime: new Date().toISOString(),
-						dataCollectionMethod: 'comprehensive_visitor_tracking',
-						trackingVersion: '2.0_enhanced',
+						dataCollectionMethod: 'comprehensive_visitor_tracking_with_advanced_fingerprinting',
+						trackingVersion: '3.0_advanced_fingerprinting',
 						rb2bActive: typeof window.reb2b !== 'undefined',
 						googleAnalyticsActive: typeof window.gtag !== 'undefined',
-						emailJSActive: typeof window.emailjs !== 'undefined'
+						emailJSActive: typeof window.emailjs !== 'undefined',
+						fingerprintJSActive: typeof window.FingerprintJS !== 'undefined'
 					};
 				}
 
+				// === ADVANCED FINGERPRINTING DATA COLLECTION ===
+				async getAdvancedFingerprintData() {
+					try {
+						const fingerprintData = {};
+						
+						// FingerprintJS (Professional fingerprinting)
+						if (typeof FingerprintJS !== 'undefined') {
+							try {
+								const fp = await FingerprintJS.load();
+								const result = await fp.get();
+								fingerprintData.fingerprintJS = {
+									visitorId: result.visitorId,
+									confidence: result.confidence,
+									components: result.components
+								};
+							} catch (fpError) {
+								fingerprintData.fingerprintJSError = fpError.message;
+							}
+						}
+						
+						// Canvas Fingerprinting
+						fingerprintData.canvasFingerprint = getCanvasFingerprint();
+						
+						// WebGL Fingerprinting
+						fingerprintData.webglFingerprint = getWebGLFingerprint();
+						
+						// Audio Fingerprinting
+						fingerprintData.audioFingerprint = await getAudioFingerprint();
+						
+						// Font Detection
+						fingerprintData.availableFonts = getFontFingerprint();
+						fingerprintData.fontCount = fingerprintData.availableFonts.length;
+						
+						// CSS Media Queries Fingerprinting
+						fingerprintData.mediaQueries = getMediaQueriesFingerprint();
+						fingerprintData.supportedMediaFeatures = fingerprintData.mediaQueries.filter(q => q.matches).map(q => q.query);
+						
+						// Device Motion/Orientation
+						fingerprintData.deviceMotion = await getDeviceMotionFingerprint();
+						
+						// WebRTC Fingerprinting
+						fingerprintData.webrtcFingerprint = await getWebRTCFingerprint();
+						
+						// GPU Detection (if DetectGPU library is loaded)
+						if (typeof DetectGPU !== 'undefined') {
+							try {
+								const gpu = await DetectGPU.getGPUInfo();
+								fingerprintData.gpuDetection = gpu;
+							} catch (gpuError) {
+								fingerprintData.gpuDetectionError = gpuError.message;
+							}
+						}
+						
+						// Additional Browser APIs Fingerprinting
+						fingerprintData.browserAPIs = this.getBrowserAPIsFingerprint();
+						
+						// Plugin Detection
+						fingerprintData.plugins = this.getPluginFingerprint();
+						
+						// Timezone Detection (advanced)
+						fingerprintData.timezoneFingerprint = this.getTimezoneFingerprint();
+						
+						// Speech Synthesis Fingerprinting
+						fingerprintData.speechSynthesis = this.getSpeechSynthesisFingerprint();
+						
+						// Performance Fingerprinting
+						fingerprintData.performanceFingerprint = this.getPerformanceFingerprint();
+						
+						return fingerprintData;
+						
+					} catch (error) {
+						return {
+							fingerprintingError: error.message,
+							fingerprintingSuccess: false
+						};
+					}
+				}
 
+				// Additional fingerprinting methods
+				getBrowserAPIsFingerprint() {
+					const apis = [
+						'WebAssembly', 'SharedArrayBuffer', 'Atomics', 'BigInt', 'OffscreenCanvas',
+						'BroadcastChannel', 'MessageChannel', 'ImageCapture', 'MediaRecorder',
+						'IntersectionObserver', 'ResizeObserver', 'MutationObserver', 'PerformanceObserver',
+						'ReportingObserver', 'PaymentRequest', 'Credential', 'PublicKeyCredential',
+						'ContactsManager', 'BarcodeDetector', 'FaceDetector', 'TextDetector'
+					];
+					
+					return apis.map(api => ({
+						api: api,
+						supported: typeof window[api] !== 'undefined'
+					}));
+				}
+
+				getPluginFingerprint() {
+					const plugins = [];
+					for (let i = 0; i < navigator.plugins.length; i++) {
+						const plugin = navigator.plugins[i];
+						plugins.push({
+							name: plugin.name,
+							description: plugin.description,
+							filename: plugin.filename,
+							version: plugin.version || 'Unknown'
+						});
+					}
+					return {
+						count: navigator.plugins.length,
+						plugins: plugins
+					};
+				}
+
+				getTimezoneFingerprint() {
+					const now = new Date();
+					return {
+						timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+						offset: now.getTimezoneOffset(),
+						offsetString: now.toString().match(/GMT[+-]\d{4}/)?.[0] || 'Unknown',
+						dstOffset: this.getDSTOffset(),
+						locale: Intl.DateTimeFormat().resolvedOptions().locale
+					};
+				}
+
+				getDSTOffset() {
+					const jan = new Date(new Date().getFullYear(), 0, 1);
+					const jul = new Date(new Date().getFullYear(), 6, 1);
+					return Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+				}
+
+				getSpeechSynthesisFingerprint() {
+					if (!('speechSynthesis' in window)) {
+						return { supported: false };
+					}
+					
+					const voices = speechSynthesis.getVoices();
+					return {
+						supported: true,
+						voiceCount: voices.length,
+						voices: voices.map(voice => ({
+							name: voice.name,
+							lang: voice.lang,
+							localService: voice.localService,
+							default: voice.default
+						}))
+					};
+				}
+
+				getPerformanceFingerprint() {
+					if (!performance.mark || !performance.measure) {
+						return { supported: false };
+					}
+					
+					// Benchmark simple operations
+					const start = performance.now();
+					let sum = 0;
+					for (let i = 0; i < 100000; i++) {
+						sum += Math.random();
+					}
+					const mathTime = performance.now() - start;
+					
+					return {
+						supported: true,
+						mathPerformance: mathTime,
+						performanceEntries: performance.getEntriesByType('navigation').length
+					};
+				}
 
 				// Helper functions
 				getDeviceType(userAgent) {
@@ -2082,69 +2580,531 @@
 					}
 				}
 
-				// Enhanced location data with additional IP services
+				// COMPREHENSIVE IP DATA EXTRACTION - ALL POSSIBLE DATA
 				async getLocationData() {
 					try {
-						// Try multiple IP services for comprehensive data
+						// Multiple IP services for maximum data extraction
 						const ipServices = [
-							'https://ipapi.co/json/',
-							'https://ip-api.com/json/',
-							'https://ipinfo.io/json'
+							{
+								name: 'ipapi.co',
+								url: 'https://ipapi.co/json/',
+								parser: (data) => ({
+									ip: data.ip,
+									city: data.city,
+									region: data.region,
+									country: data.country_name,
+									countryCode: data.country_code,
+									isp: data.org,
+									postal: data.postal,
+									latitude: data.latitude,
+									longitude: data.longitude,
+									timezone: data.timezone,
+									asn: data.asn,
+									mobile: data.mobile,
+									proxy: data.proxy,
+									hosting: data.hosting,
+									continent: data.continent_code,
+									currency: data.currency,
+									languages: data.languages,
+									callingCode: data.calling_code,
+									accuracy: data.accuracy,
+									network: data.network,
+									version: data.version
+								})
+							},
+							{
+								name: 'ip-api.com',
+								url: 'https://ip-api.com/json/?fields=66846719',
+								parser: (data) => ({
+									ip: data.query,
+									city: data.city,
+									region: data.regionName,
+									country: data.country,
+									countryCode: data.countryCode,
+									isp: data.isp,
+									postal: data.zip,
+									latitude: data.lat,
+									longitude: data.lon,
+									timezone: data.timezone,
+									asn: data.as,
+									mobile: data.mobile,
+									proxy: data.proxy,
+									hosting: data.hosting,
+									district: data.district,
+									reverse: data.reverse,
+									org: data.org,
+									status: data.status
+								})
+							},
+							{
+								name: 'ipinfo.io',
+								url: 'https://ipinfo.io/json',
+								parser: (data) => ({
+									ip: data.ip,
+									city: data.city,
+									region: data.region,
+									country: data.country,
+									postal: data.postal,
+									latitude: data.loc?.split(',')[0],
+									longitude: data.loc?.split(',')[1],
+									timezone: data.timezone,
+									org: data.org,
+									hostname: data.hostname,
+									anycast: data.anycast,
+									privacy: data.privacy
+								})
+							}
 						];
 						
+						let combinedData = {
+							ip: 'Unknown',
+							ipVersion: 'Unknown',
+							dataSourcesUsed: [],
+							errors: []
+						};
+						
+						// Try each service and combine data
 						for (let service of ipServices) {
 							try {
-								const response = await fetch(service);
+								const response = await fetch(service.url);
 								const data = await response.json();
+								const parsedData = service.parser(data);
 								
-								// Normalize data from different services
-								return {
-									ip: data.ip || data.query,
-									city: data.city,
-									region: data.region || data.regionName,
-									country: data.country_name || data.country,
-									countryCode: data.country_code || data.countryCode,
-									isp: data.org || data.isp,
-									postal: data.postal || data.zip,
-									latitude: data.latitude || data.lat,
-									longitude: data.longitude || data.lon,
-									timezone: data.timezone,
-									asn: data.as || data.asn,
-									mobile: data.mobile || false,
-									proxy: data.proxy || false,
-									hosting: data.hosting || false
-								};
+								// Merge data, keeping first valid value for each field
+								Object.keys(parsedData).forEach(key => {
+									if (parsedData[key] && parsedData[key] !== 'Unknown' && !combinedData[key]) {
+										combinedData[key] = parsedData[key];
+									}
+								});
+								
+								combinedData.dataSourcesUsed.push(service.name);
+								
+								// Add service-specific data
+								combinedData[`${service.name}_data`] = parsedData;
+								
 							} catch (serviceError) {
-								continue; // Try next service
+								combinedData.errors.push(`${service.name}: ${serviceError.message}`);
+								continue;
 							}
 						}
 						
-						// Fallback if all services fail
-						return {
-							ip: 'Unknown',
-							city: 'Unknown',
-							region: 'Unknown',
-							country: 'Unknown',
-							isp: 'Unknown',
-							locationError: 'All IP services failed'
+						// Determine IP version
+						if (combinedData.ip && combinedData.ip.includes(':')) {
+							combinedData.ipVersion = 'IPv6';
+							combinedData.ipv6Analysis = this.analyzeIPv6(combinedData.ip);
+						} else if (combinedData.ip && combinedData.ip.includes('.')) {
+							combinedData.ipVersion = 'IPv4';
+							combinedData.ipv4Analysis = this.analyzeIPv4(combinedData.ip);
+						}
+						
+						// Additional IP intelligence
+						combinedData.threatIntelligence = await this.getThreatIntelligence(combinedData.ip);
+						combinedData.reverseDNS = await this.getReverseDNS(combinedData.ip);
+						combinedData.geolocationAccuracy = this.calculateGeolocationAccuracy(combinedData);
+						combinedData.networkType = this.determineNetworkType(combinedData);
+						combinedData.connectionQuality = this.estimateConnectionQuality(combinedData);
+						combinedData.businessIntelligence = this.getBusinessIntelligence(combinedData);
+						
+						// Comprehensive analysis
+						combinedData.ipAnalysis = {
+							isResidential: this.isResidentialIP(combinedData),
+							isBusiness: this.isBusinessIP(combinedData),
+							isDataCenter: this.isDataCenterIP(combinedData),
+							isMobile: this.isMobileIP(combinedData),
+							isProxy: this.isProxyIP(combinedData),
+							isVPN: this.isVPNIP(combinedData),
+							isTor: this.isTorIP(combinedData),
+							isHosting: this.isHostingIP(combinedData),
+							riskScore: this.calculateRiskScore(combinedData),
+							trustScore: this.calculateTrustScore(combinedData)
 						};
+						
+						return combinedData;
+						
 					} catch (error) {
 						return {
 							ip: 'Unknown',
-							city: 'Unknown',
-							region: 'Unknown',
-							country: 'Unknown',
-							isp: 'Unknown',
-							locationError: error.message
+							locationError: error.message,
+							ipVersion: 'Unknown',
+							errorType: 'comprehensive_ip_analysis_failed'
 						};
 					}
 				}
+
+				// IPv6 Analysis
+				analyzeIPv6(ipv6) {
+					try {
+						const segments = ipv6.split(':');
+						return {
+							format: 'IPv6',
+							segments: segments.length,
+							prefix: segments[0] + ':' + segments[1],
+							networkPrefix: segments.slice(0, 4).join(':'),
+							interfaceId: segments.slice(4).join(':'),
+							isLinkLocal: ipv6.startsWith('fe80:'),
+							isLoopback: ipv6 === '::1',
+							isMulticast: ipv6.startsWith('ff'),
+							isUniqueLocal: ipv6.startsWith('fc') || ipv6.startsWith('fd'),
+							isGlobal: !ipv6.startsWith('fe80:') && !ipv6.startsWith('fc') && !ipv6.startsWith('fd'),
+							regionalIndicator: this.getIPv6RegionalIndicator(segments[0])
+						};
+					} catch (error) {
+						return { analysisError: error.message };
+					}
+				}
+
+				// IPv4 Analysis
+				analyzeIPv4(ipv4) {
+					try {
+						const octets = ipv4.split('.').map(Number);
+						return {
+							format: 'IPv4',
+							octets: octets,
+							class: this.getIPv4Class(octets[0]),
+							isPrivate: this.isPrivateIPv4(octets),
+							isLoopback: octets[0] === 127,
+							isMulticast: octets[0] >= 224 && octets[0] <= 239,
+							isBroadcast: ipv4.endsWith('.255'),
+							subnetMask: this.estimateSubnetMask(octets),
+							geographicHint: this.getIPv4GeographicHint(octets)
+						};
+					} catch (error) {
+						return { analysisError: error.message };
+					}
+				}
+
+				// Threat Intelligence
+				async getThreatIntelligence(ip) {
+					try {
+						// This would integrate with threat intelligence APIs
+						// For now, basic heuristics
+						return {
+							threatLevel: 'low', // Would be calculated from threat feeds
+							knownMalicious: false,
+							spamListed: false,
+							botnetParticipation: false,
+							abuseConfidence: 0,
+							lastSeen: null,
+							reportedBy: [],
+							threatCategories: []
+						};
+					} catch (error) {
+						return { threatIntelError: error.message };
+					}
+				}
+
+				// Reverse DNS Lookup
+				async getReverseDNS(ip) {
+					try {
+						// Note: Reverse DNS lookups are limited in browsers
+						// This would need server-side implementation for full functionality
+						return {
+							hostname: 'Browser limitation - server-side lookup required',
+							domains: [],
+							serverSideRequired: true
+						};
+					} catch (error) {
+						return { reverseDNSError: error.message };
+					}
+				}
+
+				// Helper functions for IP analysis
+				getIPv6RegionalIndicator(prefix) {
+					const prefixMap = {
+						'2001': 'Global Unicast',
+						'2400': 'Asia-Pacific',
+						'2409': 'Asia-Pacific (India region)',
+						'2600': 'North America',
+						'2800': 'Latin America',
+						'2a00': 'Europe',
+						'2c00': 'Africa'
+					};
+					return prefixMap[prefix] || 'Unknown region';
+				}
+
+				getIPv4Class(firstOctet) {
+					if (firstOctet >= 1 && firstOctet <= 126) return 'Class A';
+					if (firstOctet >= 128 && firstOctet <= 191) return 'Class B';
+					if (firstOctet >= 192 && firstOctet <= 223) return 'Class C';
+					if (firstOctet >= 224 && firstOctet <= 239) return 'Class D (Multicast)';
+					if (firstOctet >= 240 && firstOctet <= 255) return 'Class E (Reserved)';
+					return 'Unknown';
+				}
+
+				isPrivateIPv4(octets) {
+					return (octets[0] === 10) ||
+						   (octets[0] === 172 && octets[1] >= 16 && octets[1] <= 31) ||
+						   (octets[0] === 192 && octets[1] === 168);
+				}
+
+				calculateGeolocationAccuracy(data) {
+					let accuracy = 'Unknown';
+					if (data.accuracy) accuracy = data.accuracy + 'km';
+					else if (data.postal) accuracy = 'City level';
+					else if (data.city) accuracy = 'Regional level';
+					else if (data.country) accuracy = 'Country level';
+					return accuracy;
+				}
+
+				determineNetworkType(data) {
+					if (data.mobile) return 'Mobile Network';
+					if (data.hosting) return 'Hosting Provider';
+					if (data.isp && data.isp.toLowerCase().includes('wireless')) return 'Wireless';
+					if (data.isp && data.isp.toLowerCase().includes('fiber')) return 'Fiber';
+					if (data.isp && data.isp.toLowerCase().includes('cable')) return 'Cable';
+					if (data.isp && data.isp.toLowerCase().includes('dsl')) return 'DSL';
+					return 'Unknown';
+				}
+
+				estimateConnectionQuality(data) {
+					let quality = 'Unknown';
+					if (data.mobile) quality = 'Mobile (Variable)';
+					else if (data.hosting) quality = 'High (Data Center)';
+					else if (data.isp) {
+						if (data.isp.toLowerCase().includes('fiber')) quality = 'Very High (Fiber)';
+						else if (data.isp.toLowerCase().includes('cable')) quality = 'High (Cable)';
+						else if (data.isp.toLowerCase().includes('dsl')) quality = 'Medium (DSL)';
+						else quality = 'Varies by ISP';
+					}
+					return quality;
+				}
+
+				getBusinessIntelligence(data) {
+					return {
+						likelyBusiness: data.org && !data.mobile,
+						companyName: data.org || 'Unknown',
+						industryGuess: this.guessIndustry(data.org),
+						employeeRange: this.estimateCompanySize(data.org),
+						businessType: this.classifyBusinessType(data.org)
+					};
+				}
+
+				// IP Classification Methods
+				isResidentialIP(data) { return !data.hosting && !data.mobile && data.isp && !data.org?.toLowerCase().includes('hosting'); }
+				isBusinessIP(data) { return data.org && !data.hosting && !data.mobile; }
+				isDataCenterIP(data) { return data.hosting || (data.org && data.org.toLowerCase().includes('hosting')); }
+				isMobileIP(data) { return data.mobile || (data.isp && data.isp.toLowerCase().includes('mobile')); }
+				isProxyIP(data) { return data.proxy || false; }
+				isVPNIP(data) { return data.org?.toLowerCase().includes('vpn') || false; }
+				isTorIP(data) { return data.org?.toLowerCase().includes('tor') || false; }
+				isHostingIP(data) { return data.hosting || false; }
+
+				calculateRiskScore(data) {
+					let risk = 0;
+					if (data.proxy) risk += 30;
+					if (data.hosting) risk += 20;
+					if (this.isVPNIP(data)) risk += 25;
+					if (this.isTorIP(data)) risk += 50;
+					return Math.min(risk, 100);
+				}
+
+				calculateTrustScore(data) {
+					let trust = 100;
+					if (data.proxy) trust -= 20;
+					if (data.hosting) trust -= 10;
+					if (this.isVPNIP(data)) trust -= 15;
+					if (this.isTorIP(data)) trust -= 30;
+					if (!data.org) trust -= 5;
+					return Math.max(trust, 0);
+				}
+
+				guessIndustry(org) {
+					if (!org) return 'Unknown';
+					const orgLower = org.toLowerCase();
+					if (orgLower.includes('telecom') || orgLower.includes('wireless')) return 'Telecommunications';
+					if (orgLower.includes('university') || orgLower.includes('college')) return 'Education';
+					if (orgLower.includes('hospital') || orgLower.includes('medical')) return 'Healthcare';
+					if (orgLower.includes('government') || orgLower.includes('gov')) return 'Government';
+					if (orgLower.includes('bank') || orgLower.includes('financial')) return 'Finance';
+					return 'Unknown';
+				}
+
+				estimateCompanySize(org) {
+					if (!org) return 'Unknown';
+					// This would need more sophisticated analysis
+					return 'Unknown (requires business intelligence data)';
+				}
+
+				classifyBusinessType(org) {
+					if (!org) return 'Unknown';
+					const orgLower = org.toLowerCase();
+					if (orgLower.includes('inc') || orgLower.includes('corp') || orgLower.includes('ltd')) return 'Corporation';
+					if (orgLower.includes('llc')) return 'Limited Liability Company';
+					if (orgLower.includes('university') || orgLower.includes('college')) return 'Educational Institution';
+					if (orgLower.includes('government') || orgLower.includes('gov')) return 'Government Agency';
+					return 'Unknown';
+				}
+
+				estimateSubnetMask(octets) {
+					// Basic subnet mask estimation based on IP class
+					if (octets[0] <= 126) return '255.0.0.0';
+					if (octets[0] <= 191) return '255.255.0.0';
+					if (octets[0] <= 223) return '255.255.255.0';
+					return 'Unknown';
+				}
+
+				getIPv4GeographicHint(octets) {
+					// This would use more sophisticated GeoIP databases
+					return 'Requires comprehensive GeoIP database';
+				}
 			}
 
-			// Initialize the notification system
+			// Initialize the notification system with advanced fingerprinting
 			window.addEventListener('load', () => {
-				new VisitorNotificationSystem();
+				// Initialize main visitor notification system
+				const visitorSystem = new VisitorNotificationSystem();
+				
+				// Initialize advanced fingerprinting immediately
+				initializeAdvancedFingerprinting();
 			});
+
+			// COMPREHENSIVE ADVANCED FINGERPRINTING INITIALIZATION
+			async function initializeAdvancedFingerprinting() {
+				console.log('🔍 Initializing Advanced Fingerprinting System...');
+				
+				try {
+					// Track fingerprinting initialization
+					gtag('event', 'advanced_fingerprinting_init', {
+						'system_status': 'starting',
+						'fingerprinting_version': '3.0_advanced',
+						'timestamp': new Date().toISOString()
+					});
+					
+					// Initialize FingerprintJS (if available)
+					if (typeof FingerprintJS !== 'undefined') {
+						try {
+							const fp = await FingerprintJS.load();
+							const result = await fp.get();
+							
+							// Store fingerprint data globally for immediate access
+							window.visitorFingerprint = {
+								id: result.visitorId,
+								confidence: result.confidence,
+								timestamp: new Date().toISOString()
+							};
+							
+							// Track successful fingerprinting
+							gtag('event', 'fingerprint_generated', {
+								'visitor_id': result.visitorId,
+								'confidence_score': result.confidence,
+								'fingerprinting_method': 'FingerprintJS_Pro',
+								'components_count': Object.keys(result.components).length
+							});
+							
+							console.log('✅ FingerprintJS initialized - Visitor ID:', result.visitorId);
+						} catch (fpError) {
+							console.error('❌ FingerprintJS error:', fpError);
+							gtag('event', 'fingerprinting_error', {
+								'error_type': 'fingerprintjs_failed',
+								'error_message': fpError.message
+							});
+						}
+					}
+					
+					// Initialize all fingerprinting techniques
+					const fingerprintingResults = await Promise.allSettled([
+						getCanvasFingerprint(),
+						getWebGLFingerprint(),
+						getAudioFingerprint(),
+						getFontFingerprint(),
+						getMediaQueriesFingerprint(),
+						getDeviceMotionFingerprint(),
+						getWebRTCFingerprint()
+					]);
+					
+					// Process fingerprinting results
+					fingerprintingResults.forEach((result, index) => {
+						const techniques = ['canvas', 'webgl', 'audio', 'fonts', 'media_queries', 'device_motion', 'webrtc'];
+						const technique = techniques[index];
+						
+						if (result.status === 'fulfilled') {
+							gtag('event', 'fingerprinting_technique_success', {
+								'technique': technique,
+								'data_size': JSON.stringify(result.value).length,
+								'timestamp': new Date().toISOString()
+							});
+							console.log(`✅ ${technique} fingerprinting completed`);
+						} else {
+							gtag('event', 'fingerprinting_technique_error', {
+								'technique': technique,
+								'error': result.reason?.message || 'Unknown error',
+								'timestamp': new Date().toISOString()
+							});
+							console.log(`❌ ${technique} fingerprinting failed:`, result.reason);
+						}
+					});
+					
+					// Track comprehensive fingerprinting completion
+					gtag('event', 'advanced_fingerprinting_complete', {
+						'total_techniques': fingerprintingResults.length,
+						'successful_techniques': fingerprintingResults.filter(r => r.status === 'fulfilled').length,
+						'failed_techniques': fingerprintingResults.filter(r => r.status === 'rejected').length,
+						'completion_time': new Date().toISOString(),
+						'fingerprinting_mode': 'comprehensive'
+					});
+					
+					console.log('🎯 Advanced Fingerprinting System Fully Initialized');
+					
+				} catch (error) {
+					console.error('❌ Advanced Fingerprinting Initialization Error:', error);
+					gtag('event', 'fingerprinting_system_error', {
+						'error_type': 'initialization_failed',
+						'error_message': error.message,
+						'timestamp': new Date().toISOString()
+					});
+				}
+			}
+
+			// Additional passive data collection (runs continuously)
+			function initializePassiveDataCollection() {
+				// Passive font loading detection
+				if (document.fonts) {
+					document.fonts.ready.then(() => {
+						gtag('event', 'fonts_loaded', {
+							'fonts_count': document.fonts.size,
+							'fonts_status': document.fonts.status,
+							'timestamp': new Date().toISOString()
+						});
+					});
+				}
+				
+				// Passive connection monitoring
+				if (navigator.connection) {
+					navigator.connection.addEventListener('change', () => {
+						gtag('event', 'connection_change', {
+							'new_connection_type': navigator.connection.effectiveType,
+							'new_downlink': navigator.connection.downlink,
+							'new_rtt': navigator.connection.rtt,
+							'timestamp': new Date().toISOString()
+						});
+					});
+				}
+				
+				// Passive orientation change monitoring
+				window.addEventListener('orientationchange', () => {
+					setTimeout(() => {
+						gtag('event', 'orientation_change', {
+							'new_orientation': screen.orientation?.angle || window.orientation,
+							'new_viewport': `${window.innerWidth}x${window.innerHeight}`,
+							'timestamp': new Date().toISOString()
+						});
+					}, 100);
+				});
+				
+				// Passive visibility change monitoring (enhanced)
+				document.addEventListener('visibilitychange', () => {
+					gtag('event', 'visibility_change_detailed', {
+						'visibility_state': document.visibilityState,
+						'hidden': document.hidden,
+						'timestamp': new Date().toISOString(),
+						'time_on_page': Math.round((Date.now() - window.pageLoadTime) / 1000)
+					});
+				});
+			}
+			
+			// Initialize passive data collection immediately
+			window.pageLoadTime = Date.now();
+			initializePassiveDataCollection();
 		</script>
 
 
