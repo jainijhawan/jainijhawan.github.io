@@ -1750,6 +1750,15 @@
 						const visitorData = await this.getVisitorDataSafely();
 						console.log('✅ Visitor data collected:', Object.keys(visitorData).length, 'fields');
 
+						// Wait for intelligence analysis to complete (if available)
+						console.log('🧠 Waiting for intelligence analysis...');
+						await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds for intelligence analysis
+
+						// Check if intelligence analysis is available
+						console.log('🔍 Checking for intelligence data...');
+						console.log('Intelligence Results Available:', !!window.visitorIntelligenceResults);
+						console.log('Intelligence Report Available:', !!window.visitorIntelligenceReport);
+						
 						// Create email template parameters
 						const templateParams = {
 							to_email: this.config.yourEmail,
