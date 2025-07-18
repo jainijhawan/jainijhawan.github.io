@@ -1056,12 +1056,9 @@ if (typeof module !== 'undefined' && module.exports) {
                         clearInterval(analysisInterval);
                     }
                     
-                    // Trigger email with intelligence data if EmailJS is available
-                    if (window.emailjs && window.visitorData) {
-                        setTimeout(() => {
-                            sendIntelligenceEmail(window.visitorData, fullReport);
-                        }, 2000); // Small delay to ensure everything is loaded
-                    }
+                    // Intelligence data is now integrated into main email notification
+                    // No separate intelligence email needed
+                    console.log('📧 Intelligence data integrated into main visitor notification email');
                     
                 } catch (error) {
                     console.error('❌ Error in automatic visitor intelligence analysis:', error);

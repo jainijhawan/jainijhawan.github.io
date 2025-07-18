@@ -1945,7 +1945,68 @@
 							data_collection_time: new Date().toISOString(),
 							
 							// === FULL DATA ===
-							full_data: JSON.stringify(visitorData, null, 2)
+							full_data: JSON.stringify(visitorData, null, 2),
+							
+							// === INTELLIGENCE ANALYSIS DATA ===
+							// Check if intelligence analysis is available
+							...(window.visitorIntelligenceResults ? {
+								// Intelligence summary fields
+								lead_quality: window.visitorIntelligenceResults.leadQuality || 'Unknown',
+								professional_grade: window.visitorIntelligenceResults.deviceProfile?.professionalGrade || 'Unknown',
+								engagement_level: window.visitorIntelligenceResults.behaviorProfile?.engagementLevel || 'Unknown',
+								visitor_type: window.visitorIntelligenceResults.deviceProfile?.deviceType || 'Unknown',
+								geographic_context: window.visitorIntelligenceResults.locationIntelligence?.geographicContext || 'Unknown',
+								
+								// Individual intelligence metrics
+								intelligence_device_type: window.visitorIntelligenceResults.deviceProfile?.deviceType || 'Unknown',
+								intelligence_performance_tier: window.visitorIntelligenceResults.deviceProfile?.performanceTier || 'Unknown',
+								intelligence_display_quality: window.visitorIntelligenceResults.deviceProfile?.displayQuality || 'Unknown',
+								intelligence_hardware_capabilities: JSON.stringify(window.visitorIntelligenceResults.deviceProfile?.hardwareCapabilities, null, 2),
+								
+								intelligence_geographic_context: window.visitorIntelligenceResults.locationIntelligence?.geographicContext || 'Unknown',
+								intelligence_market_opportunity: window.visitorIntelligenceResults.locationIntelligence?.marketOpportunity || 'Unknown',
+								intelligence_network_quality: window.visitorIntelligenceResults.locationIntelligence?.networkQuality || 'Unknown',
+								intelligence_tech_hub: window.visitorIntelligenceResults.locationIntelligence?.techHub ? 'YES' : 'NO',
+								
+								intelligence_engagement_level: window.visitorIntelligenceResults.behaviorProfile?.engagementLevel || 'Unknown',
+								intelligence_intent_level: window.visitorIntelligenceResults.behaviorProfile?.intentLevel || 'Unknown',
+								intelligence_bounce_risk: window.visitorIntelligenceResults.behaviorProfile?.bounceRisk || 'Unknown',
+								intelligence_behavior_pattern: window.visitorIntelligenceResults.behaviorProfile?.behaviorPattern || 'Unknown',
+								intelligence_attention_span: window.visitorIntelligenceResults.behaviorProfile?.attentionSpan || 'Unknown',
+								intelligence_interaction_quality: window.visitorIntelligenceResults.behaviorProfile?.interactionQuality || 'Unknown',
+								
+								intelligence_likely_profession: window.visitorIntelligenceResults.professionalContext?.likelyProfession || 'Unknown',
+								intelligence_company_size: window.visitorIntelligenceResults.professionalContext?.companySize || 'Unknown',
+								intelligence_industry_guess: window.visitorIntelligenceResults.professionalContext?.industryGuess || 'Unknown',
+								intelligence_decision_authority: window.visitorIntelligenceResults.professionalContext?.decisionAuthority || 'Unknown',
+								intelligence_technical_sophistication: window.visitorIntelligenceResults.professionalContext?.technicalSophistication || 'Unknown',
+								
+								intelligence_risk_level: window.visitorIntelligenceResults.riskProfile?.riskLevel || 'Unknown',
+								intelligence_trust_score: window.visitorIntelligenceResults.riskProfile?.trustScore || 'Unknown',
+								intelligence_threat_indicators: JSON.stringify(window.visitorIntelligenceResults.riskProfile?.threatIndicators, null, 2),
+								intelligence_security_assessment: window.visitorIntelligenceResults.riskProfile?.securityAssessment || 'Unknown',
+								
+								intelligence_revenue_potential: window.visitorIntelligenceResults.businessIntelligence?.revenuePotential || 'Unknown',
+								intelligence_conversion_probability: window.visitorIntelligenceResults.businessIntelligence?.conversionProbability || 'Unknown',
+								intelligence_competitive_landscape: JSON.stringify(window.visitorIntelligenceResults.businessIntelligence?.competitiveLandscape, null, 2),
+								intelligence_market_opportunity: window.visitorIntelligenceResults.businessIntelligence?.marketOpportunity || 'Unknown',
+								
+								intelligence_browser_capabilities: window.visitorIntelligenceResults.technicalProfile?.browserCapabilities || 'Unknown',
+								intelligence_os_capabilities: window.visitorIntelligenceResults.technicalProfile?.osCapabilities || 'Unknown',
+								intelligence_graphics_capabilities: window.visitorIntelligenceResults.technicalProfile?.graphicsCapabilities || 'Unknown',
+								intelligence_security_profile: window.visitorIntelligenceResults.technicalProfile?.securityProfile || 'Unknown',
+								
+								intelligence_retention_potential: window.visitorIntelligenceResults.engagementProfile?.retentionPotential || 'Unknown',
+								intelligence_interaction_pattern: window.visitorIntelligenceResults.engagementProfile?.interactionPattern || 'Unknown',
+								intelligence_attention_span: window.visitorIntelligenceResults.engagementProfile?.attentionSpan || 'Unknown',
+								intelligence_bounce_risk: window.visitorIntelligenceResults.engagementProfile?.bounceRisk || 'Unknown',
+								
+								// Intelligence reports
+								intelligence_summary: window.visitorIntelligenceReport ? JSON.stringify(window.visitorIntelligenceReport.summary, null, 2) : 'Not available',
+								intelligence_recommendations: window.visitorIntelligenceReport ? window.visitorIntelligenceReport.recommendations.join('\n') : 'Not available',
+								intelligence_insights: window.visitorIntelligenceReport ? JSON.stringify(window.visitorIntelligenceReport.insights, null, 2) : 'Not available',
+								intelligence_actions: window.visitorIntelligenceReport ? window.visitorIntelligenceReport.actions.join('\n') : 'Not available'
+							} : {})
 						};
 
 						console.log('📤 Sending email with', Object.keys(templateParams).length, 'parameters...');

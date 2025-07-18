@@ -12,10 +12,7 @@ class VisitorIntelligenceTester {
     init() {
         console.log('🧪 Initializing Visitor Intelligence Testing Framework...');
         
-        // Add test button to page
-        this.addTestButton();
-        
-        // Add test panel
+        // Add test panel (button removed for production)
         this.addTestPanel();
         
         // Listen for test mode
