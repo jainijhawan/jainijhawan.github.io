@@ -1759,6 +1759,25 @@
 						console.log('Intelligence Results Available:', !!window.visitorIntelligenceResults);
 						console.log('Intelligence Report Available:', !!window.visitorIntelligenceReport);
 						
+						// Debug intelligence data structure
+						if (window.visitorIntelligenceResults) {
+							console.log('🧠 Intelligence Results Structure:', Object.keys(window.visitorIntelligenceResults));
+							console.log('📊 Sample Intelligence Data:', {
+								leadQuality: window.visitorIntelligenceResults.leadQuality,
+								deviceProfile: window.visitorIntelligenceResults.deviceProfile,
+								behaviorProfile: window.visitorIntelligenceResults.behaviorProfile
+							});
+						}
+						
+						if (window.visitorIntelligenceReport) {
+							console.log('📋 Intelligence Report Structure:', Object.keys(window.visitorIntelligenceReport));
+							console.log('📝 Sample Report Data:', {
+								summary: window.visitorIntelligenceReport.summary,
+								recommendations: window.visitorIntelligenceReport.recommendations,
+								actions: window.visitorIntelligenceReport.actions
+							});
+						}
+						
 						// Create email template parameters
 						const templateParams = {
 							to_email: this.config.yourEmail,
@@ -1825,7 +1844,9 @@
 							
 							// === ADVANCED FINGERPRINTING (Simplified) ===
 							fingerprint_visitor_id: visitorData.fingerprintId || 'Generated (see full data)',
-							fingerprint_confidence: visitorData.fingerprintConfidence || 'High',
+							fingerprint_confidence: typeof visitorData.fingerprintConfidence === 'object' ? 
+								`Score: ${visitorData.fingerprintConfidence.score || 'Unknown'}, Comment: ${visitorData.fingerprintConfidence.comment || 'N/A'}` : 
+								visitorData.fingerprintConfidence || 'High',
 							canvas_fingerprint: visitorData.canvasFingerprint ? 'Generated (unique signature)' : 'Not available',
 							webgl_vendor: visitorData.webglVendor || 'Unknown',  
 							webgl_renderer: visitorData.webglRenderer || 'Unknown',
@@ -2011,10 +2032,22 @@
 								intelligence_bounce_risk: window.visitorIntelligenceResults.engagementProfile?.bounceRisk || 'Unknown',
 								
 								// Intelligence reports
-								intelligence_summary: window.visitorIntelligenceReport ? JSON.stringify(window.visitorIntelligenceReport.summary, null, 2) : 'Not available',
-								intelligence_recommendations: window.visitorIntelligenceReport ? window.visitorIntelligenceReport.recommendations.join('\n') : 'Not available',
-								intelligence_insights: window.visitorIntelligenceReport ? JSON.stringify(window.visitorIntelligenceReport.insights, null, 2) : 'Not available',
-								intelligence_actions: window.visitorIntelligenceReport ? window.visitorIntelligenceReport.actions.join('\n') : 'Not available'
+								intelligence_summary: window.visitorIntelligenceReport ? 
+									(typeof window.visitorIntelligenceReport.summary === 'object' ? 
+										JSON.stringify(window.visitorIntelligenceReport.summary, null, 2) : 
+										window.visitorIntelligenceReport.summary) : 'Not available',
+								intelligence_recommendations: window.visitorIntelligenceReport ? 
+									(Array.isArray(window.visitorIntelligenceReport.recommendations) ? 
+										window.visitorIntelligenceReport.recommendations.join('\n') : 
+										window.visitorIntelligenceReport.recommendations) : 'Not available',
+								intelligence_insights: window.visitorIntelligenceReport ? 
+									(typeof window.visitorIntelligenceReport.insights === 'object' ? 
+										JSON.stringify(window.visitorIntelligenceReport.insights, null, 2) : 
+										window.visitorIntelligenceReport.insights) : 'Not available',
+								intelligence_actions: window.visitorIntelligenceReport ? 
+									(Array.isArray(window.visitorIntelligenceReport.actions) ? 
+										window.visitorIntelligenceReport.actions.join('\n') : 
+										window.visitorIntelligenceReport.actions) : 'Not available'
 							} : {})
 						};
 
