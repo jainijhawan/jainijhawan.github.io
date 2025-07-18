@@ -1737,8 +1737,8 @@
 					try {
 						if (this.notificationSent) {
 							console.log('⏭️ Email already sent, skipping...');
-							return;
-						}
+						return;
+					}
 
 						if (typeof emailjs === 'undefined') {
 							console.error('❌ EmailJS not available');
@@ -1952,20 +1952,20 @@
 
 						// Send email
 						const result = await emailjs.send(
-							this.config.emailjsServiceId,
-							this.config.emailjsTemplateId,
-							templateParams
-						);
-
+								this.config.emailjsServiceId,
+								this.config.emailjsTemplateId,
+								templateParams
+							);
+							
 						console.log('✅ EMAIL SENT SUCCESSFULLY!', result);
 						this.notificationSent = true;
 
 						// Track success
 						gtag('event', 'email_notification_success', {
-							'status': 'sent_successfully',
-							'visitor_location': `${visitorData.city}, ${visitorData.country}`,
+								'status': 'sent_successfully',
+								'visitor_location': `${visitorData.city}, ${visitorData.country}`,
 							'data_points': Object.keys(templateParams).length
-						});
+							});
 
 					} catch (error) {
 						console.error('❌ EMAIL SENDING FAILED:', error);
@@ -2112,6 +2112,11 @@
 					}
 
 					console.log('✅ Data collection completed:', Object.keys(data).length, 'fields');
+					
+					// Store data globally for visitor intelligence system
+					window.visitorData = data;
+					console.log('🌐 Visitor data stored globally for intelligence analysis');
+					
 					return data;
 				}
 
@@ -2120,12 +2125,12 @@
 						{
 							url: 'https://ipapi.co/json/',
 							parser: (data) => ({
-								ip: data.ip,
-								city: data.city,
-								region: data.region,
-								country: data.country_name,
-								countryCode: data.country_code,
-								isp: data.org,
+							ip: data.ip,
+							city: data.city,
+							region: data.region,
+							country: data.country_name,
+							countryCode: data.country_code,
+							isp: data.org,
 								postal: data.postal,
 								latitude: data.latitude,
 								longitude: data.longitude,
@@ -2155,10 +2160,10 @@
 						}
 					}
 
-					return {
-						ip: 'Unknown',
-						city: 'Unknown',
-						country: 'Unknown',
+						return {
+							ip: 'Unknown',
+							city: 'Unknown',
+							country: 'Unknown',
 						locationError: 'All location services failed'
 					};
 				}
@@ -2400,18 +2405,24 @@
 				
 				// Small delay to ensure all libraries are loaded
 				setTimeout(() => {
-					new VisitorNotificationSystem();
+				new VisitorNotificationSystem();
 				}, 1000);
 			});
 
 			// Backup initialization (in case load event already fired)
 			if (document.readyState === 'complete') {
 				console.log('🌐 PAGE ALREADY LOADED - Starting Visitor Notification System');
-				setTimeout(() => {
+			setTimeout(() => {
 					new VisitorNotificationSystem();
 				}, 1000);
 			}
 		</script>
+
+		<!-- Advanced Visitor Intelligence -->
+		<script src="js/advanced-visitor-intelligence.js"></script>
+		
+		<!-- Visitor Intelligence Testing Framework -->
+		<script src="js/visitor-intelligence-test.js"></script>
 
 
 
