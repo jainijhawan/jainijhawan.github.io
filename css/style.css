@@ -707,6 +707,7 @@ h1, h2, h3, h4, h5, h6, figure {
   top: 0;
 }
 
+/* App tiles */
 .work {
   background-size: cover;
   background-position: center center;
@@ -716,7 +717,25 @@ h1, h2, h3, h4, h5, h6, figure {
   width: 100%;
   display: table;
   overflow: hidden;
-  border-radius: 35px;
+  border-radius: 65px;
+  /* 3D + motion */
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    opacity 0.18s ease-out;
+  will-change: transform;
+}
+/* Give each column some perspective so tiles can pop out in 3D */
+.col-padding {
+  padding: 6px !important;
+  margin: 0px !important;
+  position: relative;
+  z-index: 1;
+  perspective: 900px;
+  perspective-origin: center center;
 }
 @media screen and (max-width: 768px) {
   .work {
@@ -729,35 +748,51 @@ h1, h2, h3, h4, h5, h6, figure {
   }
 }
 .work .desc {
-  display: table-cell;
-  vertical-align: middle;
-  height: 270px;
-  background: #fff;
+  /* Bottom capsule overlay (no white sheet) */
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  height: auto;
+  background: rgba(0, 0, 0, 0.42);
+  color: #fff;
+  border-radius: 999px;
+  padding: 10px 14px;
   opacity: 0;
-  -webkit-transition: 0.3s;
-  -o-transition: 0.3s;
-  transition: 0.3s;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  box-shadow:
+    0 10px 24px rgba(0, 0, 0, 0.25),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.14);
+  -webkit-transition: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  -o-transition: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .work .desc h3 {
-  font-size: 20px;
-  -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
-  transition: transform 0.3s, opacity 0.3s;
-  -webkit-transform: translate3d(0, -15px, 0);
-  transform: translate3d(0, -15px, 0);
+  margin: 0;
+  font-size: 16px;
+  line-height: 1.2;
+  color: #fff;
+  -webkit-transition: -webkit-transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-transform: translate3d(0, 8px, 0);
+  transform: translate3d(0, 8px, 0);
 }
 .work .desc span {
   display: block;
-  color: #999999;
-  font-size: 14px;
-  -webkit-transition: -webkit-transform 0.3s, opacity 0.3s;
-  transition: transform 0.3s, opacity 0.3s;
-  -webkit-transform: translate3d(0, 15px, 0);
-  transform: translate3d(0, 15px, 0);
+  margin-top: 2px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 12px;
+  line-height: 1.2;
+  -webkit-transition: -webkit-transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  -webkit-transform: translate3d(0, 10px, 0);
+  transform: translate3d(0, 10px, 0);
 }
 @media screen and (max-width: 768px) {
   .work .desc {
     opacity: 1;
-    background: rgba(255, 255, 255, 0.6);
+    background: rgba(0, 0, 0, 0.35);
   }
   .work .desc h3 {
     -webkit-transform: translate3d(0, 0, 0);
@@ -778,6 +813,42 @@ h1, h2, h3, h4, h5, h6, figure {
 .work:hover .desc span {
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
+}
+
+/* Enhanced hover state: subtle 3D pop-out card */
+.work.is-tilting {
+  box-shadow:
+    0 34px 70px rgba(0, 0, 0, 0.45),
+    0 10px 25px rgba(0, 0, 0, 0.22);
+  filter: saturate(1.08) contrast(1.05);
+  z-index: 30;
+}
+
+/* Ensure the hovered column layers above neighbors */
+.col-padding.is-tilting-wrapper {
+  z-index: 40;
+}
+
+/* Moving light sheen for extra 3D fun */
+.work::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  /* cursor-driven highlight (set by JS) */
+  background:
+    radial-gradient(
+      320px 240px at calc(var(--mx, 0.5) * 100%) calc(var(--my, 0.5) * 100%),
+      rgba(255, 255, 255, 0.55),
+      rgba(255, 255, 255, 0.18) 35%,
+      rgba(255, 255, 255, 0) 70%
+    );
+  mix-blend-mode: overlay;
+}
+.work.is-tilting::after {
+  opacity: 1;
 }
 
 #fh5co-started {

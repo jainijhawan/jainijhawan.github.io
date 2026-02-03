@@ -128,6 +128,95 @@
 
 	};
 
+	// 3D hover + subtle cursor-follow for app tiles
+	var initWorkTiles3D = function() {
+		// Only run on devices with fine pointer (avoid mobile/tablet weirdness)
+		var hasFinePointer = window.matchMedia &&
+			window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+		if (!hasFinePointer) return;
+
+		var $tiles = $('#fh5co-work .work');
+		if (!$tiles.length) return;
+
+		$tiles.each(function () {
+			var el = this;
+			var $el = $(this);
+			var $wrapper = $el.closest('.col-padding');
+			var rafId = null;
+			var currentTransform = '';
+
+			function applyTransform(e) {
+				var rect = el.getBoundingClientRect();
+				var centerX = rect.left + rect.width / 2;
+				var centerY = rect.top + rect.height / 2;
+				var relX = (e.clientX - centerX) / rect.width;   // -0.5 .. 0.5
+				var relY = (e.clientY - centerY) / rect.height;  // -0.5 .. 0.5
+
+				// Bigger + more animated (still capped so it doesn't feel nauseating)
+				var maxTilt = 20;
+				var rotateY = relX * maxTilt * 2;    // left/right
+				var rotateX = -relY * maxTilt * 2;   // up/down
+				var rotateZ = relX * 2;              // tiny twist
+
+				// Tiny parallax translation so it feels like it follows the cursor
+				var maxShift = 18;
+				var translateX = relX * maxShift * 2;
+				var translateY = relY * maxShift * 2;
+
+				// Pop-out scale
+				var scale = 1.10;
+
+				// Cursor position for the highlight sheen
+				var mx = (e.clientX - rect.left) / rect.width;
+				var my = (e.clientY - rect.top) / rect.height;
+				el.style.setProperty('--mx', Math.max(0, Math.min(1, mx)).toFixed(4));
+				el.style.setProperty('--my', Math.max(0, Math.min(1, my)).toFixed(4));
+
+				var transform =
+					'translate3d(' + translateX.toFixed(2) + 'px,' + translateY.toFixed(2) + 'px, 45px) ' +
+					'rotateX(' + rotateX.toFixed(2) + 'deg) ' +
+					'rotateY(' + rotateY.toFixed(2) + 'deg) ' +
+					'rotateZ(' + rotateZ.toFixed(2) + 'deg) ' +
+					'scale(' + scale.toFixed(3) + ')';
+
+				if (transform === currentTransform) return;
+				currentTransform = transform;
+				el.style.transform = transform;
+			}
+
+			function onMouseMove(e) {
+				if (rafId) cancelAnimationFrame(rafId);
+				rafId = requestAnimationFrame(function () {
+					applyTransform(e);
+				});
+			}
+
+			function onMouseEnter(e) {
+				$el.addClass('is-tilting');
+				if ($wrapper.length) {
+					$wrapper.addClass('is-tilting-wrapper');
+				}
+				onMouseMove(e);
+			}
+
+			function onMouseLeave() {
+				$el.removeClass('is-tilting');
+				if ($wrapper.length) {
+					$wrapper.removeClass('is-tilting-wrapper');
+				}
+				if (rafId) cancelAnimationFrame(rafId);
+				rafId = null;
+				currentTransform = '';
+				el.style.transform = 'translate3d(0, 0, 0)';
+				el.style.removeProperty('--mx');
+				el.style.removeProperty('--my');
+			}
+
+			el.addEventListener('mousemove', onMouseMove);
+			el.addEventListener('mouseenter', onMouseEnter);
+			el.addEventListener('mouseleave', onMouseLeave);
+		});
+	};
 
 	// Loading page
 	var loaderPage = function() {
@@ -143,6 +232,7 @@
 		parallax();
 		// pieChart();
 		skillsWayPoint();
+		initWorkTiles3D();
 	});
 
 
