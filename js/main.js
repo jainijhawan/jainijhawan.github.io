@@ -135,12 +135,14 @@
 			window.matchMedia('(hover: hover) and (pointer: fine)').matches;
 		if (!hasFinePointer) return;
 
-		var $tiles = $('#fh5co-work .work');
+		// App tiles + resume button share the same 3D effect
+		var $tiles = $('#fh5co-work .work, .glowing-button');
 		if (!$tiles.length) return;
 
 		$tiles.each(function () {
 			var el = this;
 			var $el = $(this);
+			var isButton = $el.hasClass('glowing-button');
 			var $wrapper = $el.closest('.col-padding');
 			var rafId = null;
 			var currentTransform = '';
@@ -172,7 +174,9 @@
 				el.style.setProperty('--mx', Math.max(0, Math.min(1, mx)).toFixed(4));
 				el.style.setProperty('--my', Math.max(0, Math.min(1, my)).toFixed(4));
 
+				var base = isButton ? 'perspective(900px) ' : '';
 				var transform =
+					base +
 					'translate3d(' + translateX.toFixed(2) + 'px,' + translateY.toFixed(2) + 'px, 45px) ' +
 					'rotateX(' + rotateX.toFixed(2) + 'deg) ' +
 					'rotateY(' + rotateY.toFixed(2) + 'deg) ' +

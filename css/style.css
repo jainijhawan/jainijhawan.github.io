@@ -1383,13 +1383,20 @@ input[type="text"] {
   background-size: 300% 300%;
   animation: gradient-rotate 4s infinite linear, glow 1.5s infinite;
   box-shadow: 0 0 15px rgba(106, 17, 203, 0.6), 0 0 30px rgba(37, 117, 252, 0.4);
-  transition: all 0.3s ease-in-out;
+  position: relative;
+  transform-style: preserve-3d;
+  transform-origin: center center;
+  transition:
+    transform 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    filter 0.22s cubic-bezier(0.16, 1, 0.3, 1),
+    color 0.22s ease-out;
+  will-change: transform;
 }
 
 .glowing-button:hover {
   color: white;
   box-shadow: 0 0 25px rgba(106, 17, 203, 0.8), 0 0 50px rgba(37, 117, 252, 0.6);
-  transform: scale(1.1);
 }
 
 .glowing-button:focus,
