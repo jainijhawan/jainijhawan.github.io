@@ -93,6 +93,78 @@ h1, h2, h3, h4, h5, h6, figure {
   height: 600px;
   width: 100%;
 }
+
+/* Header should size to content (no big empty orange area) */
+#fh5co-header.fh5co-cover {
+  height: auto;
+  min-height: 0;
+  padding: 6em 0 4em 0;
+}
+@media screen and (max-width: 768px) {
+  #fh5co-header.fh5co-cover {
+    padding: 4em 0 3em 0;
+  }
+}
+
+/* Hero split layout */
+#fh5co-header .fh5co-hero-split {
+  display: flex;
+  align-items: center;
+}
+@media screen and (max-width: 992px) {
+  #fh5co-header .fh5co-hero-split {
+    display: block;
+  }
+}
+#fh5co-header .fh5co-hero-left {
+  text-align: center;
+}
+#fh5co-header .fh5co-hero-left .profile-thumb {
+  background-size: cover !important;
+  background-position: center center;
+  background-repeat: no-repeat;
+  position: relative;
+  height: 200px;
+  width: 200px;
+  margin: 0 auto;
+  margin-bottom: 30px;
+  -webkit-border-radius: 50%;
+  -moz-border-radius: 50%;
+  -ms-border-radius: 50%;
+  border-radius: 50%;
+}
+#fh5co-header .fh5co-hero-left h3 {
+  font-size: 16px;
+}
+#fh5co-header .fh5co-hero-left .fh5co-social-icons li a {
+  color: white;
+}
+#fh5co-header .fh5co-hero-right {
+  margin-top: 10px;
+}
+
+/* Make the contact list readable on the orange cover */
+#fh5co-header .fh5co-hero-contact {
+  margin: 20px auto 0 auto;
+  float: none;
+  text-align: left;
+}
+#fh5co-header .fh5co-hero-contact li {
+  color: black;
+}
+#fh5co-header .fh5co-hero-contact .first-block {
+  color: white;
+}
+#fh5co-header .fh5co-hero-contact .second-block {
+  color: black;
+  max-width: 420px;
+}
+#fh5co-header .fh5co-hero-contact li .first-block {
+  color: rgba(255, 255, 255, 0.95);
+}
+#fh5co-header .fh5co-hero-contact li .second-block {
+  color: black !important;
+}
 #fh5co-header .overlay,
 .fh5co-cover .overlay {
   position: absolute;
@@ -1423,4 +1495,40 @@ input[type="text"] {
   50% {
     box-shadow: 0 0 25px rgba(106, 17, 203, 0.8), 0 0 45px rgba(37, 117, 252, 0.6);
   }
+}
+
+/* Ensure Elfsight widget sits inline under contact list in hero left */
+.fh5co-hero-left .elfsight-app-eaf23d26-a275-4260-b10f-cc7ad78dbd5e {
+  position: relative !important;
+  display: inline-block !important;
+  margin: 0 !important;
+  vertical-align: middle !important;
+  z-index: 1 !important;
+}
+
+.fh5co-hero-left > div[style] {
+  clear: both;
+}
+
+/* Force any iframe inside the elfsight widget to be static so it doesn't float */
+.fh5co-hero-left .elfsight-app-eaf23d26-a275-4260-b10f-cc7ad78dbd5e iframe {
+  position: static !important;
+  transform: none !important;
+}
+
+/* Ensure resume button sits above the counter widget */
+.fh5co-hero-left .glowing-button, .fh5co-hero-left .glowing-button:focus {
+  position: relative !important;
+  z-index: 99999 !important;
+}
+
+/* Allow overflowing children to render above nearby widgets */
+.fh5co-hero-left {
+  overflow: visible !important;
+}
+
+/* Force the entire code snippet and its inner elements to render bold */
+.fh5co-hero-right pre,
+.fh5co-hero-right pre * {
+  font-weight: 700 !important;
 }
