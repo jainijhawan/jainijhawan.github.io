@@ -353,6 +353,9 @@
 	<!-- EmailJS for notifications - COMMENTED OUT FOR NOW -->
 	<!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script> -->
 
+	<!-- Lottie Animation Library -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.10.2/lottie.min.js"></script>
+
 	<!-- Modernizr JS -->
 	<script src="js/modernizr-2.6.2.min.js"></script>
 	<!-- FOR IE9 below -->
@@ -717,6 +720,8 @@
 						</div>
 						<div style="padding-right: 10px;">
 							<ul class="timeline" style="padding-left: 10px;">
+								<div id="timeline-fill" class="timeline-fill" aria-hidden="true"></div>
+								<div id="lottie-container" class="timeline-lottie-animation" aria-hidden="true"></div>
 							<li class="timeline-heading text-center animate-box">
 								<div>
 									<h3>Work Experience</h3>
@@ -2493,6 +2498,57 @@
 		<!-- Visitor Intelligence Testing Framework -->
 		<script src="js/visitor-intelligence-test.js"></script>
 
+		<!-- Lottie Animation Initialization for Timeline -->
+		<script>
+			// Initialize Lottie and sync timeline fill to animation progress (time-driven)
+			document.addEventListener('DOMContentLoaded', function() {
+				const container = document.getElementById('lottie-container');
+				const fill = document.getElementById('timeline-fill');
+				if (!container) return;
+
+				// Load Lottie (don't autoplay; we'll optionally slow it)
+				const anim = lottie.loadAnimation({
+					container: container,
+					renderer: 'svg',
+					loop: true,
+					autoplay: true,
+					path: 'assets/pixel-stickman-running.json'
+				});
+
+				// Keep Lottie playing at its original internal speed; control vertical travel separately
+				// (do NOT call setSpeed so the animation inside the Lottie JSON remains unchanged)
+
+				// Drive the visual progression based on our own duration (seconds)
+				const durationSec = 10; // full travel time (seconds)
+				let start = performance.now();
+				let displayedHeight = 0;
+
+				function sync() {
+					const now = performance.now();
+					const elapsed = now - start;
+					const clamped = Math.min(Math.max(elapsed / (durationSec * 1000), 0), 1);
+					const target = clamped * 100;
+					// slower easing to remove stepping
+					displayedHeight += (target - displayedHeight) * 0.06;
+					if (fill) fill.style.height = displayedHeight + "%";
+					// move the lottie container along the same path
+					container.style.bottom = displayedHeight + "%";
+
+					// If we've reached the end of the travel, stop moving the container and keep it at the top
+					if (elapsed >= durationSec * 1000) {
+						// snap to 100% once the eased value is very close to target
+						if (Math.abs(100 - displayedHeight) < 0.2) {
+							if (fill) fill.style.height = "100%";
+							container.style.bottom = "100%";
+							return; // stop the RAF loop
+						}
+					}
+
+					requestAnimationFrame(sync);
+				}
+				requestAnimationFrame(sync);
+			});
+		</script>
 
 
 </body>
