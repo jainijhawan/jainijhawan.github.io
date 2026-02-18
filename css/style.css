@@ -527,9 +527,13 @@ h1, h2, h3, h4, h5, h6, figure {
     margin-left: -64px;
   }
 }
+.timeline .timeline-heading {
+  margin-top: -20px;
+  margin-bottom: 20px;
+}
 @media screen and (max-width: 768px) {
   .timeline .timeline-heading {
-    margin-bottom: 30px;
+    margin-bottom: 10px;
   }
 }
 .timeline .timeline-heading > div h3 {
@@ -552,13 +556,22 @@ h1, h2, h3, h4, h5, h6, figure {
   }
 }
 .timeline > li {
-  margin-bottom: 5px;
+  margin-bottom: 12px;
   position: relative;
 }
 @media screen and (max-width: 768px) {
   .timeline > li {
-    margin-bottom: 2em;
+    margin-bottom: 1.2em;
   }
+}
+
+/* Align Work Experience and Education headings to the left of the center line */
+.timeline > li.timeline-heading {
+  text-align: left;
+  float: left;
+  width: calc(50% - 60px);
+  padding-left: 20px;
+  box-sizing: border-box;
 }
 .timeline > li:before, .timeline > li:after {
   content: " ";
