@@ -826,34 +826,122 @@
 						<div class="text-center fh5co-heading">
 							<h2 style="font-size: 40px; margin-bottom: 20px;">Tools of My Trade 🔨🧰</h2>
 						</div>
-						<div style="padding-left: 10px;">
-							<div class="row" style="margin-left: -5px; margin-right: -5px;">
-								<div class="col-md-6 text-center" style="padding: 5px;">
-									<div class="chart" data-percent="95"><span style="font-size: 12px;"><strong>Swift</strong><br>95%</span></div>
+					<div style="padding-left: 10px;">
+						<div class="row" style="margin-left: -5px; margin-right: -5px;">
+							<div class="col-md-6 text-center" style="padding: 5px;">
+								<div class="work" style="background-image: url(images/profile.png);">
+									<div class="desc">
+										<h3>Swift</h3>
+										<span></span>
+									</div>
 								</div>
-								<div class="col-md-6 text-center" style="padding: 5px;">
-									<div class="chart" data-percent="90"><span style="font-size: 12px;"><strong>SwiftUI</strong><br>90%</span></div>
+							</div>
+							<div class="col-md-6 text-center" style="padding: 5px;">
+								<div class="work" style="background-image: url(images/profile.png);">
+									<div class="desc">
+										<h3>SwiftUI</h3>
+										<span></span>
+									</div>
 								</div>
-								<div class="col-md-6 text-center" style="padding: 5px;">
-									<div class="chart" data-percent="93"><span style="font-size: 12px;"><strong>UIKit</strong><br>93%</span></div>
+							</div>
+							<div class="col-md-6 text-center" style="padding: 5px;">
+								<div class="work" style="background-image: url(images/profile.png);">
+									<div class="desc">
+										<h3>UIKit</h3>
+										<span></span>
+									</div>
 								</div>
-								<div class="col-md-6 text-center" style="padding: 5px;">
-									<div class="chart" data-percent="90"><span style="font-size: 12px;"><strong>GraphQL</strong><br>90%</span></div>
+							</div>
+							<div class="col-md-6 text-center" style="padding: 5px;">
+								<div class="work" style="background-image: url(images/profile.png);">
+									<div class="desc">
+										<h3>GraphQL</h3>
+										<span></span>
+									</div>
 								</div>
-								<div class="col-md-6 text-center" style="padding: 5px;">
-									<div class="chart" data-percent="85"><span style="font-size: 12px;"><strong>Objective C</strong><br>85%</span></div>
+							</div>
+							<div class="col-md-6 text-center" style="padding: 5px;">
+								<div class="work" style="background-image: url(images/profile.png);">
+									<div class="desc">
+										<h3>Objective C</h3>
+										<span></span>
+									</div>
 								</div>
-								<div class="col-md-6 text-center" style="padding: 5px;">
-									<div class="chart" data-percent="90"><span style="font-size: 12px;"><strong>Core Data</strong><br>90%</span></div>
+							</div>
+							<div class="col-md-6 text-center" style="padding: 5px;">
+								<div class="work" style="background-image: url(images/profile.png);">
+									<div class="desc">
+										<h3>Core Data</h3>
+										<span></span>
+									</div>
 								</div>
-								<div class="col-md-6 text-center" style="padding: 5px;">
-									<div class="chart" data-percent="85"><span style="font-size: 12px;"><strong>XCTest</strong><br>85%</span></div>
+							</div>
+							<div class="col-md-6 text-center" style="padding: 5px;">
+								<div class="work" style="background-image: url(images/profile.png);">
+									<div class="desc">
+										<h3>XCTest</h3>
+										<span></span>
+									</div>
 								</div>
-								<div class="col-md-6 text-center" style="padding: 5px;">
-									<div class="chart" data-percent="89"><span style="font-size: 12px;"><strong>RxSwift</strong><br>89%</span></div>
+							</div>
+							<div class="col-md-6 text-center" style="padding: 5px;">
+								<div class="work" style="background-image: url(images/profile.png);">
+									<div class="desc">
+										<h3>RxSwift</h3>
+										<span></span>
+									</div>
 								</div>
 							</div>
 						</div>
+                        
+                        <!-- Tilt interactions for Tools tiles -->
+                        <script>
+                          (function() {
+                          // Apply tilt on mouse movement for each tool tile to mimic Apps tiles
+                          var tiles = document.querySelectorAll('.work');
+                            if (!tiles.length) return;
+                            tiles.forEach(function(tile) {
+                              // Ensure 3D context
+                              tile.style.transformOrigin = 'center center';
+                              tile.style.transition = 'transform 0.22s cubic-bezier(0.16, 1, 0.3, 1)';
+                              tile.style.willChange = 'transform';
+
+                              tile.addEventListener('mousemove', function(e) {
+                                var rect = tile.getBoundingClientRect();
+                                var px = (e.clientX - rect.left) / rect.width; // 0..1
+                                var py = (e.clientY - rect.top) / rect.height; // 0..1
+                                // Tilt angles similar to the Apps section
+                                // Increase tilt magnitude for more noticeable movement
+                                // Increased tilt magnitude for noticeable movement
+                                var tiltX = (py - 0.5) * -22; // around X axis
+                                var tiltY = (px - 0.5) * 22;  // around Y axis
+                                // Subtle movement: add translation to simulate parallax as the cursor moves
+                                var tx = (px - 0.5) * 16; // translate X in px
+                                var ty = (py - 0.5) * 16; // translate Y in px
+                                // Decreased magnification on hover
+                                var scale = tile._hoverActive ? 1.22 : 1.20; // slightly reduced magnification when hovering
+                                tile.style.transform = 'perspective(1000px) rotateX(' + tiltX + 'deg) rotateY(' + tiltY + 'deg) translateX(' + tx + 'px) translateY(' + ty + 'px) scale(' + scale + ')';
+                                // Update sheen gradient position if present
+                                tile.style.setProperty('--mx', px.toFixed(3));
+                                tile.style.setProperty('--my', py.toFixed(3));
+                              });
+
+                               tile.addEventListener('mouseleave', function() {
+                                tile.style.transform = 'none';
+                                tile.style.removeProperty('--mx');
+                                tile.style.removeProperty('--my');
+                                tile._hoverActive = false;
+                              });
+                              tile.addEventListener('mouseenter', function() {
+                                tile._hoverActive = true;
+                              });
+                              // Optional: reset on touch devices
+                              tile.addEventListener('touchmove', function() {
+                                // Let the user pan; keep tilt behavior simple on touch by resetting after touchend
+                              });
+                            });
+                          })();
+                        </script>
 					</div>
 				</div>
 			</div>
