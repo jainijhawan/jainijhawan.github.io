@@ -918,8 +918,8 @@
                                 // Subtle movement: add translation to simulate parallax as the cursor moves
                                 var tx = (px - 0.5) * 16; // translate X in px
                                 var ty = (py - 0.5) * 16; // translate Y in px
-                                // Decreased magnification on hover
-                                var scale = tile._hoverActive ? 1.22 : 1.20; // slightly reduced magnification when hovering
+                                // Further decreased magnification on hover
+                                var scale = tile._hoverActive ? 1.10 : 1.20; // further reduced magnification when hovering
                                 tile.style.transform = 'perspective(1000px) rotateX(' + tiltX + 'deg) rotateY(' + tiltY + 'deg) translateX(' + tx + 'px) translateY(' + ty + 'px) scale(' + scale + ')';
                                 // Update sheen gradient position if present
                                 tile.style.setProperty('--mx', px.toFixed(3));
@@ -939,6 +939,29 @@
                               tile.addEventListener('touchmove', function() {
                                 // Let the user pan; keep tilt behavior simple on touch by resetting after touchend
                               });
+                            });
+                          })();
+
+                          // Move titles above tiles so they are always visible
+                          (function() {
+                            var containers = document.querySelectorAll('.col-md-6.text-center');
+                            containers.forEach(function(container) {
+                              var tile = container.querySelector('.work');
+                              if (!tile) return;
+                              var desc = tile.querySelector('.desc');
+                              var title = '';
+                              if (desc && desc.querySelector('h3')) {
+                                title = desc.querySelector('h3').textContent.trim();
+                              }
+                              if (title) {
+                                var header = document.createElement('div');
+                                header.className = 'tool-title-static';
+                                header.textContent = title;
+                                container.insertBefore(header, tile);
+                              }
+                              if (desc) {
+                                desc.style.display = 'none';
+                              }
                             });
                           })();
                         </script>
