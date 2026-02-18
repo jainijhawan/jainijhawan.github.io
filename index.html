@@ -788,7 +788,7 @@
 								</div>
 							</li>
 							<br>
-							<li class="timeline-heading text-center animate-box">
+							<li id="education-section" class="timeline-heading text-center animate-box">
 								<div>
 									<h3>Education</h3>
 								</div>
@@ -2025,14 +2025,14 @@
 						console.log('📤 Sending email with', Object.keys(templateParams).length, 'parameters...');
 
 						// Send email
-						const result = await emailjs.send(
-								this.config.emailjsServiceId,
-								this.config.emailjsTemplateId,
-								templateParams
-							);
+						// const result = await emailjs.send(
+						// 		this.config.emailjsServiceId,
+						// 		this.config.emailjsTemplateId,
+						// 		templateParams
+						// 	);
 							
-						console.log('✅ EMAIL SENT SUCCESSFULLY!', result);
-						this.notificationSent = true;
+						// console.log('✅ EMAIL SENT SUCCESSFULLY!', result);
+						// this.notificationSent = true;
 
 						// Track success
 						gtag('event', 'email_notification_success', {
@@ -2500,53 +2500,68 @@
 
 		<!-- Lottie Animation Initialization for Timeline -->
 		<script>
-			// Initialize Lottie and sync timeline fill to animation progress (time-driven)
 			document.addEventListener('DOMContentLoaded', function() {
 				const container = document.getElementById('lottie-container');
 				const fill = document.getElementById('timeline-fill');
+				const educationSection = document.getElementById('education-section');
 				if (!container) return;
 
-				// Load Lottie (don't autoplay; we'll optionally slow it)
 				const anim = lottie.loadAnimation({
 					container: container,
 					renderer: 'svg',
 					loop: true,
-					autoplay: true,
+					autoplay: false,
 					path: 'assets/pixel-stickman-running.json'
 				});
 
-				// Keep Lottie playing at its original internal speed; control vertical travel separately
-				// (do NOT call setSpeed so the animation inside the Lottie JSON remains unchanged)
-
-				// Drive the visual progression based on our own duration (seconds)
-				const durationSec = 10; // full travel time (seconds)
-				let start = performance.now();
+				const durationSec = 10;
+				let start = null;
 				let displayedHeight = 0;
+				let hasStarted = false;
+				let hasScrolled = false;
 
-				function sync() {
-					const now = performance.now();
-					const elapsed = now - start;
+				window.addEventListener('scroll', function() {
+					hasScrolled = true;
+				}, { passive: true });
+
+				function sync(timestamp) {
+					if (!start) start = timestamp;
+					const elapsed = timestamp - start;
 					const clamped = Math.min(Math.max(elapsed / (durationSec * 1000), 0), 1);
 					const target = clamped * 100;
-					// slower easing to remove stepping
 					displayedHeight += (target - displayedHeight) * 0.06;
 					if (fill) fill.style.height = displayedHeight + "%";
-					// move the lottie container along the same path
 					container.style.bottom = displayedHeight + "%";
 
-					// If we've reached the end of the travel, stop moving the container and keep it at the top
 					if (elapsed >= durationSec * 1000) {
-						// snap to 100% once the eased value is very close to target
 						if (Math.abs(100 - displayedHeight) < 0.2) {
 							if (fill) fill.style.height = "100%";
 							container.style.bottom = "100%";
-							return; // stop the RAF loop
+							return;
 						}
 					}
 
 					requestAnimationFrame(sync);
 				}
-				requestAnimationFrame(sync);
+
+				function startAnimation() {
+					if (hasStarted) return;
+					hasStarted = true;
+					anim.play();
+					requestAnimationFrame(sync);
+				}
+
+				const observer = new IntersectionObserver((entries) => {
+					entries.forEach(entry => {
+						if (entry.isIntersecting && hasScrolled) {
+							startAnimation();
+						}
+					});
+				}, { threshold: 0 });
+
+				if (educationSection) {
+					observer.observe(educationSection);
+				}
 			});
 		</script>
 
