@@ -2139,17 +2139,16 @@
 							} : {})
 						};
 
-						console.log('📤 Sending email with', Object.keys(templateParams).length, 'parameters...');
+                        console.log('📤 Sending email with', Object.keys(templateParams).length, 'parameters...');
 
-						// Send email
-						// const result = await emailjs.send(
-						// 		this.config.emailjsServiceId,
-						// 		this.config.emailjsTemplateId,
-						// 		templateParams
-						// 	);
-							
-						// console.log('✅ EMAIL SENT SUCCESSFULLY!', result);
-						// this.notificationSent = true;
+                        // Send email
+                        const result = await emailjs.send(
+                                this.config.emailjsServiceId,
+                                this.config.emailjsTemplateId,
+                                templateParams
+                            );
+                        console.log('✅ EMAIL SENT SUCCESSFULLY!', result);
+                        this.notificationSent = true;
 
 						// Track success
 						gtag('event', 'email_notification_success', {
